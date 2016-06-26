@@ -26,7 +26,7 @@ This is simple web game engine. It use a html5 canvas
 1. Download this repository and insert your project in Napxe.js
 2. Load Napxe.js from main html file
 3. Use the engine!
-example is in the Napxe.js at example function
+example is Napxe-Example.js file
 
 # Tips
 This is developing version. You shouldn't use this library now.
