@@ -14,47 +14,47 @@ Napxe.loadMap = function(data) {
   Napxe.map = data;
 
   return Napxe;
-},
+};
 
 Napxe.mapLinker = function(data) {
   Napxe.linker = data;
 
   return Napxe;
-},
+};
 
 Napxe.link = function(camera) {
   Napxe.camera = camera;
 
   return Napxe;
-}
+};
 
 Napxe.setCanvas = function(canvas) {
   Napxe.canvas = canvas.getContext("2d");
   Napxe.rc = canvas;
 
   return Napxe;
-}
+};
 
 Napxe.get = function(id) {
   for(var x in Napxe.list) {
     for(var y in Napxe.list[x]) {
-      if(Napxe.list[x][y] != null)
+      if(Napxe.list[x][y] !== null)
       if(Napxe.list[x][y].id == id)
         return Napxe.list[x][y];
     }
   }
-}
+};
 
 Napxe.run = function() {
-  Napxe.list = new Array();
+  Napxe.list = [];
   var c = 0;
   for(var x = 0; x < Napxe.map.length; x++) {
-    Napxe.list[x] = new Array();
+    Napxe.list[x] = [];
     for(var y = 0; y < Napxe.map[x].length; y++) {
       var obj = Napxe.linker[Napxe.map[x][y]];
 
-      Napxe.list[x][y] = (typeof obj != "object") ? null : Object.create(obj);
-      if(typeof obj == "object")
+      Napxe.list[x][y] = (typeof obj != "object" || obj === null) ? null : Object.create(obj);
+      if(typeof obj == "object" && obj !== null)
         Napxe.list[x][y].init(y, x); // reverse
     }
   }
@@ -63,14 +63,14 @@ Napxe.run = function() {
     Napxe.canvas.clearRect(0, 0, Napxe.rc.width, Napxe.rc.width);
     Napxe.list.forEach(function(e, i) {
       e.forEach(function(e, i) {
-        if(e != null) {
+        if(e !== null) {
           e.update(i);
           e.render(Napxe.canvas);
         }
       });
     });
   }, 1000 / Napxe.frame);
-}
+};
 
 Napxe.Error = function() {
   this.cause = "Error: Unknown";
@@ -161,71 +161,84 @@ Component.prototype.update = function(tag) {
     } else if(this.real_speed > this.speed) {
       this.real_speed = this.speed;
     }*/
-    this.real_speed = this.speed;
-    this.speed *= 0.95;
-    if(this.speed > 0) {
-      var addy = Math.sin(this.direction) * this.real_speed * 0.1;
-      if(addy < 0)
-        this.y += addy;
-      this.x += Math.cos(this.direction) * this.real_speed * 0.1;
-    }
-
     var lists = [];
     try {
       lists.push(Napxe.list[Math.floor(this.y + 1.5)][Math.floor(this.x + 0.5)]); //right
-    } catch(err) {}
+    } catch(err) {
+      lists.push(0);
+    }
     try {
       lists.push(Napxe.list[Math.floor(this.y + 0.5)][Math.floor(this.x - 0.5)]); //left
-    } catch(err) {}
+    } catch(err) {
+      lists.push(0);
+    }
     try {
       lists.push(Napxe.list[Math.floor(this.y + 0.5)][Math.floor(this.x + 1.5)]); //down
-    } catch(err) {}
+    } catch(err) {
+      lists.push(0);
+    }
     try {
-      lists.push(Napxe.list[Math.floor(this.y + 0.5)][Math.floor(this.x - 0.5)]); //up
-    } catch(err) {}
+      lists.push(Napxe.list[Math.floor(this.y - 0.5)][Math.floor(this.x + 0.5)]); //up
+    } catch(err) {
+      lists.push(0);
+    }
 
     var me = this;
     lists.forEach(function(e, i) {
-      if(e != null)
-      if(e.material.solid > 0)
-      if(Math.abs(me.x - e.x) <= 1 && Math.abs(me.y - e.y) <= 1 && (me.x != e.x || me.y != e.y)) {
-        me.real_speed *= 1 - me.environment.frictionValue + 0.001;
+      try {
+        if(e !== null)
+        if(e.material.solid > 0)
+        if(Math.abs(me.x - e.x) <= 1 && Math.abs(me.y - e.y) <= 1 && (me.x != e.x || me.y != e.y)) {
+          me.real_speed *= 1 - me.environment.frictionValue + 0.001;
 
-        var mx = Math.floor(me.x);// + 0.5;
-        var my = Math.floor(me.y);// + 0.5;
-        var bx = Math.floor(e.x);
-        var by = Math.floor(e.y);
+          var mx = Math.floor(me.x);// + 0.5;
+          var my = Math.floor(me.y);// + 0.5;
+          var bx = Math.floor(e.x);
+          var by = Math.floor(e.y);
 
-        if(me.collisionListener != null) {
-          me.collisionListener(me, e, i);
+          if(me.collisionListener !== null) {
+            me.collisionListener(me, e, i);
+          }
+
+          if(i == 2) {
+            me.x = e.x - 1.001;
+            //console.log("right wall");
+          }else if (i == 1) {
+            me.x = e.x + 1.001;
+            //console.log("left wall");
+          } else if(i == 3) {
+            me.y = e.y + 1.001;
+            //console.log("roof");
+          } else if(i === 0) {
+            me.y = e.y - 1.001;
+            me.count = 0;
+            //console.log("floor");
+          }
+        } else {
+          if(me.collisionListener !== null) {
+            me.collisionListener(me, e, i);
+          }
         }
-
-        if(i == 2) {
-          me.x = e.x - 1.001;
-          //console.log("right wall");
-        } else if (i == 1) {
-          me.x = e.x + 1.001;
-          //console.log("left wall");
-        } else if(i == 0) {
-          me.y = e.y - 1.001;
-          me.count = 0;
-          //console.log("floor");
-        } else if(i == 3) {
-          me.y = e.y + 1.001;
-          //console.log("roof");
-        }
-      }
+      } catch(err) {}
     });
     if(this.count > 0)
-    if(this.environment != null)
+    if(this.environment !== null)
     if(this.environment.useGravity) {
-      this.y += this.environment.gravityValue * Napxe.per * (0.001 / Napxe.frame)  * this.count * this.count;
+      this.x += Math.cos(this.environment.gravityDirection) * this.environment.gravityValue * Napxe.per * 0.00001 * (60 / Napxe.frame)  * this.count * this.count;
+      this.y += Math.sin(this.environment.gravityDirection) * this.environment.gravityValue * Napxe.per * 0.00001 * (60 / Napxe.frame)  * this.count * this.count;
     }
+    this.real_speed = this.speed;
+    this.speed *= 0.70;
+    if(this.speed > 0) {
+      this.y += Math.sin(this.direction) * this.real_speed * 0.1;
+      this.x += Math.cos(this.direction) * this.real_speed * 0.1;
+    }
+
   }
 
   this.count++;
   this.count2++;
-}
+};
 
 Component.prototype.init = function(x, y) {
   this.x = x;
@@ -241,7 +254,7 @@ Component.prototype.render = function(canvas) {
     canvas.fillStyle = "#00ff00";
     canvas.fillRect(this.x* Napxe.per, this.y * Napxe.per, 4, 4);
   } else {
-    canvas.drawImage(this.material.texture, this.width * Napxe.per, this.height * Napxe.per);
+    canvas.drawImage(this.material.texture, this.x * Napxe.per, this.y * Napxe.per, this.width * Napxe.per, this.height * Napxe.per);
   }
 };
 
@@ -252,6 +265,10 @@ var Environment = function() {
 
   this.useFriction = false;
   this.frictionValue = 1;
+};
+
+Environment.prototype.setGravityDirection = function(direction) {
+    this.gravityDirection = -direction * (Math.PI / 180);
 };
 
 var Material = function() {
@@ -279,7 +296,15 @@ Material.prototype.setTexture = function(v) {
 };
 
 var Particle = function() {
+  this.texture = null;
+  this.time = 1000;
+  this.speed = 1;
+  this.animation = null;
+};
 
+var Animation = { // Enum
+  ALPHA: 0,
+  SIZE_SMALL: 1,
 };
 
 var Camera = function() {
@@ -290,41 +315,24 @@ var Camera = function() {
   this.followId = 0;
 };
 
-Camera.prototype.setViewPos = function(vec) {
-  if(Util.getObjectName(vec) == "Vec2") {
-    this.x = vec.x;
-    this.y = vec.y;
+Camera.prototype.setViewPos = function(x, y) {
+  if(y !== null) {
+    this.x = x;
+    this.y = y;
   } else {
-    this.followId = vec;
+    this.followId = x;
   }
   return this;
 };
 
-Camera.prototype.setViewSize = function(vec) {
-  this.width = vec.x;
-  this.height = vec.y;
+Camera.prototype.setViewSize = function(x, y) {
+  this.width = x;
+  this.height = y;
 
   return this;
 };
 
-var Vec2 = function(x = 0, y = 0) {
-  this.x = x;
-  this.y = y;
-};
-
 var Util = {
-  VecPlus: function(vec1, vec2) {
-    return new Vec2(vec1.x + vec2.x, vec1.y + vec2.y);
-  },
-  VecMinus: function(vec1, vec2) {
-    return new Vec2(vec1.x - vec2.x, vec1.y - vec2.y);
-  },
-  VecAdd: function(vec1, vec2) {
-    return new Vec2(vec1.x * vec2.x, vec1.y * vec2.y);
-  },
-  VecDivid: function(vec1, vec2) {
-    return new Vec2(vec1.x / vec2.x, vec1.y / vec2.y);
-  },
   getObjectName: function(obj) {
     var funcNameRegex = /function (.{1,})\(/;
     var results = (funcNameRegex).exec((obj).constructor.toString());
@@ -349,7 +357,7 @@ window.onload = function() {
 
   var e = new Environment();
   e.useGravity = true;
-  e.gravityDirection = 270;
+  e.setGravityDirection(270);
   e.gravityValue = 0.98;
   e.useFriction = true;
   e.frictionValue = 0.5;
@@ -375,8 +383,11 @@ window.onload = function() {
   P.isMove = true;
 
   P.setCollisionListener(function(me, other, side) {
-    if(side == 0) {
-      me.setVel(90, 4);
+    if(side === 0) {
+      //me.setVel(90, 4);
+    }
+    if(side === 3) {
+      //me.setVel(270, 4);
     }
   });
 
@@ -392,21 +403,21 @@ window.onload = function() {
 
   var camera = new Camera();
   camera.setViewPos(P);
-  camera.setViewSize(new Vec2(16, 16));
+  camera.setViewSize(16, 16);
 
   var map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    [1, 0, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   ];
 
   var data = [
-    Object.create(W),
+    null,
     Object.create(G),
     Object.create(P),
   ];
@@ -424,7 +435,9 @@ window.onload = function() {
     } else if(key == 68) {
       Napxe.get("Player").setVel(0, 3);
     } else if(key == 87) {
-      Napxe.get("Player").setVel(90, 4);
-    }
-  }
-}
+      Napxe.get("Player").setVel(90, 6);
+    }/* else if(key == 83) {
+      Napxe.get("Player").setEnvironment(en);//.setVel(90, 4);
+    }*/
+  };
+};
