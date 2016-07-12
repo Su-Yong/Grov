@@ -35,27 +35,33 @@ Napxe.setCanvas = function(canvas) {
   return Napxe;
 };
 
-Napxe.get = function(id) {
-  for(var x in Napxe.list) {
-    for(var y in Napxe.list[x]) {
-      if(Napxe.list[x][y] !== null)
-      if(Napxe.list[x][y].id == id)
-        return Napxe.list[x][y];
+Napxe.get = function(id, y) {
+  if(y == null) {
+    for(var x in Napxe.list) {
+      for(var y in Napxe.list[x]) {
+        if(Napxe.list[x][y] !== null)
+        if(Napxe.list[x][y].id == id)
+          return Napxe.list[x][y];
+      }
     }
+  } else {
+    return Napxe.list[y][id];
   }
 };
 
 Napxe.run = function() {
   Napxe.list = [];
   var c = 0;
+
   for(var x = 0; x < Napxe.map.length; x++) {
     Napxe.list[x] = [];
     for(var y = 0; y < Napxe.map[x].length; y++) {
       var obj = Napxe.linker[Napxe.map[x][y]];
 
       Napxe.list[x][y] = (typeof obj != "object" || obj === null) ? null : Object.create(obj);
-      if(typeof obj == "object" && obj !== null)
-        Napxe.list[x][y].init(y, x); // reverse
+      if(typeof obj == "object" && obj !== null) {
+        Napxe.list[x][y].init(y, x);
+      }
     }
   }
 
@@ -161,34 +167,43 @@ Component.prototype.update = function(tag) {
     } else if(this.real_speed > this.speed) {
       this.real_speed = this.speed;
     }*/
-    var lists = [];
+    var lists = [];/*
     try {
-      lists.push(Napxe.list[Math.floor(this.y + 1.5)][Math.floor(this.x + 0.5)]); //right
-    } catch(err) {
-      lists.push(0);
-    }
-    try {
-      lists.push(Napxe.list[Math.floor(this.y + 0.5)][Math.floor(this.x - 0.5)]); //left
-    } catch(err) {
-      lists.push(0);
-    }
-    try {
-      lists.push(Napxe.list[Math.floor(this.y + 0.5)][Math.floor(this.x + 1.5)]); //down
-    } catch(err) {
-      lists.push(0);
-    }
-    try {
-      lists.push(Napxe.list[Math.floor(this.y - 0.5)][Math.floor(this.x + 0.5)]); //up
-    } catch(err) {
-      lists.push(0);
-    }
+      lists.push(Napxe.list[Math.floor(this.y + 1.5)][Math.floor(this.x)]); //right
+    } catch(err) { lists.push(0); }
 
+    try {
+      lists.push(Napxe.list[Math.floor(this.y - 1.5)][Math.floor(this.x)]); //left
+    } catch(err) { lists.push(0); }
+*/
+Napxe.get("Player").debugRender(Napxe.canvas);
+    try { //down
+    } catch(err) { lists.push(0); }
+/*
+    try {
+      lists.push(Napxe.list[Math.floor(this.y - 1.5)][Math.floor(this.x - 1)]); //down left
+    } catch(err) { lists.push(0); }
+
+    try {
+      lists.push(Napxe.list[Math.floor(this.y)][Math.floor(this.x + 1.5)]); //up
+    } catch(err) { lists.push(0); }
+*/
     var me = this;
     lists.forEach(function(e, i) {
       try {
         if(e !== null)
-        if(e.material.solid > 0)
-        if(Math.abs(me.x - e.x) <= 1 && Math.abs(me.y - e.y) <= 1 && (me.x != e.x || me.y != e.y)) {
+        if(e !== 0)
+        if(e.material.solid > 0) {
+          console.log(e.id);
+          //if(me.x <= e.x + e.width && me.x >= e.x) {
+            if(me.y <= e.y - e.height && me.y >= e.y - e.height * 2) {
+              me.y = e.y - 1.001;
+              me.count = 0;
+              console.log("floor");
+            }
+          //}
+        }
+        /*if(Math.abs(me.x - e.x) <= 1 && Math.abs(me.y - e.y) <= 1 && (me.x != e.x || me.y != e.y)) {
           me.real_speed *= 1 - me.environment.frictionValue + 0.001;
 
           var mx = Math.floor(me.x);// + 0.5;
@@ -218,7 +233,7 @@ Component.prototype.update = function(tag) {
           if(me.collisionListener !== null) {
             me.collisionListener(me, e, i);
           }
-        }
+        }*/
       } catch(err) {}
     });
     if(this.count > 0)
@@ -228,7 +243,7 @@ Component.prototype.update = function(tag) {
       this.y += Math.sin(this.environment.gravityDirection) * this.environment.gravityValue * Napxe.per * 0.00001 * (60 / Napxe.frame)  * this.count * this.count;
     }
     this.real_speed = this.speed;
-    this.speed *= 0.70;
+    this.speed *= 0.80;
     if(this.speed > 0) {
       this.y += Math.sin(this.direction) * this.real_speed * 0.1;
       this.x += Math.cos(this.direction) * this.real_speed * 0.1;
@@ -249,14 +264,24 @@ Component.prototype.render = function(canvas) {
   if(typeof this.material.texture == "string") {
     canvas.fillStyle = this.material.texture;
     canvas.fillRect(this.x * Napxe.per, this.y * Napxe.per, this.width * Napxe.per, this.height * Napxe.per);
-    canvas.fillStyle = "#ff0000";
-    canvas.fillRect((this.x + this.height) * Napxe.per, (this.y + this.height) * Napxe.per, -4, -4);
-    canvas.fillStyle = "#00ff00";
-    canvas.fillRect(this.x* Napxe.per, this.y * Napxe.per, 4, 4);
+    if(this.id == "Player") {
+    try {
+      var a = Napxe.get(Math.floor(this.x) - 1, Math.floor(this.y) - 1);
+      if(a instanceof Object && a !== null)
+        a.debugRender(Napxe.canvas);
+    } catch(err) {}
+  }
   } else {
     canvas.drawImage(this.material.texture, this.x * Napxe.per, this.y * Napxe.per, this.width * Napxe.per, this.height * Napxe.per);
   }
 };
+
+Component.prototype.debugRender = function(canvas) {
+  canvas.fillStyle = "#ff0000";
+  canvas.fillRect((this.x + this.height) * Napxe.per, (this.y + this.height) * Napxe.per, -4, -4);
+  canvas.fillStyle = "#00ff00";
+  canvas.fillRect(this.x* Napxe.per, this.y * Napxe.per, 4, 4);
+}
 
 var Environment = function() {
   this.useGravity = true;
@@ -364,7 +389,7 @@ window.onload = function() {
 
   var we = new Environment();
   we.useGravity = true;
-  we.gravityDirection = 270;
+  we.setGravityDirection(270);
   we.gravityValue = 0.098;
 
   var gm = new Material();
@@ -394,6 +419,7 @@ window.onload = function() {
   var G = new Component();
   G.setMaterial(gm);
   G.setWidth(1).setHeight(1);
+  G.setId("Ground");
 
   var W = new Component();
   W.setMaterial(wm);
@@ -431,9 +457,9 @@ window.onload = function() {
   window.onkeydown = function(e) {
     var key = e.keyCode;
     if(key == 65) {
-      Napxe.get("Player").setVel(180, 3);
+      Napxe.get("Player").setVel(180, 1);
     } else if(key == 68) {
-      Napxe.get("Player").setVel(0, 3);
+      Napxe.get("Player").setVel(0, 1);
     } else if(key == 87) {
       Napxe.get("Player").setVel(90, 6);
     }/* else if(key == 83) {
