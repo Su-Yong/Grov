@@ -191,8 +191,8 @@ Component.prototype.update = function(tag) {
         if(Math.abs(me.x - e.x) <= 1 && Math.abs(me.y - e.y) <= 1 && (me.x != e.x || me.y != e.y)) {
           me.real_speed *= 1 - me.environment.frictionValue + 0.001;
 
-          var mx = Math.floor(me.x);// + 0.5;
-          var my = Math.floor(me.y);// + 0.5;
+          var mx = Math.floor(me.x); + 0.5;
+          var my = Math.floor(me.y); + 0.5;
           var bx = Math.floor(e.x);
           var by = Math.floor(e.y);
 
@@ -203,16 +203,19 @@ Component.prototype.update = function(tag) {
           if(i == 2) {
             me.x = e.x - 1.001;
             //console.log("right wall");
+            me.count *= 1 - Math.cos(me.environment.gravityDirection);
           }else if (i == 1) {
             me.x = e.x + 1.001;
             //console.log("left wall");
+            me.count *= Math.cos(me.environment.gravityDirection);
           } else if(i == 3) {
             me.y = e.y + 1.001;
             //console.log("roof");
+            me.count *= Math.sin(me.environment.gravityDirection);
           } else if(i === 0) {
             me.y = e.y - 1.001;
-            me.count = 0;
             //console.log("floor");
+            me.count *= 1 - Math.sin(me.environment.gravityDirection);
           }
         } else {
           if(me.collisionListener !== null) {
@@ -435,9 +438,9 @@ window.onload = function() {
     } else if(key == 68) {
       Napxe.get("Player").setVel(0, 3);
     } else if(key == 87) {
-      Napxe.get("Player").setVel(90, 6);
-    }/* else if(key == 83) {
-      Napxe.get("Player").setEnvironment(en);//.setVel(90, 4);
-    }*/
+      Napxe.get("Player").setVel(90, 3);
+    } else if(key == 83) {
+      Napxe.get("Player").setVel(270, 3);
+    }
   };
 };
