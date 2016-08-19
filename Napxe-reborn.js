@@ -57,6 +57,7 @@ var Component = function() {
 
   this.speed = [0, 0];
   this.direction = [0, 0];
+  this.angle = 0;
 };
 
 Component.prototype.setWidth = function(width) {
@@ -87,7 +88,7 @@ Component.prototype.setVel = function(direction, speed) {
 };
 Component.prototype.collistionUpdate = function(element) {
   if(Math.hypot(Math.abs(this.x - element.x), Math.abs(this.y - element.y)) <= Math.hypot((this.width / 2), (this.height / 2)) + Math.hypot((element.width / 2), (element.height / 2))) {
-
+    this.angle
   }
 }
 Component.prototype.render = function() {
