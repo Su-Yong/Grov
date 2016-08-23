@@ -15,7 +15,7 @@ var keyCodes = {
   3 : "break",
   8 : "backspace / delete",
   9 : "tab",
-  12 : 'clear',
+  12 : "clear",
   13 : "enter",
   16 : "shift",
   17 : "ctrl ",
@@ -126,14 +126,14 @@ var keyCodes = {
   144 : "num lock ",
   145 : "scroll lock",
   160 : "^",
-  161: '!',
+  161: "!",
   163 : "#",
-  164: '$',
-  165: 'ù',
+  164: "$",
+  165: "ù",
   166 : "page backward",
   167 : "page forward",
   169 : "closing paren (AZERTY)",
-  170: '*',
+  170: "*",
   171 : "~ + * key",
   173 : "minus (firefox), mute/unmute",
   174 : "decrease volume level",
@@ -205,16 +205,16 @@ Napxe.setKeyBind = function(key, func) {
       return;
     }
   }
-  for(var i in keyCodes) {
-    if(keyCodes[i].indexOf(key)) {
-      keycode = i;
-      console.log(key + " " + i);
+  for(var j in keyCodes) {
+    if(keyCodes[j].indexOf(key)) {
+      keycode = j;
+      console.log(key + " " + j);
 
       Napxe.keys.push({key: keycode, func: func});
       return;
     }
   }
-}
+};
 
 Napxe.get = function(id) {
   for(var x in Napxe.list) {
@@ -243,7 +243,7 @@ Napxe.run = function() {
           Napxe.list[x][y].speed = 0;
       }
     }
-  }
+  };
 
   Napxe.list = [];
   var c = 0;
@@ -411,8 +411,8 @@ Component.prototype.update = function(tag) {
         if(e.material.solid > 0)
         if(Math.abs(me.x - e.x) <= 1 && Math.abs(me.y - e.y) <= 1 && (me.x != e.x || me.y != e.y)) {
 
-          var mx = Math.floor(me.x); + 0.5;
-          var my = Math.floor(me.y); + 0.5;
+          var mx = Math.floor(me.x) + 0.5;
+          var my = Math.floor(me.y) + 0.5;
           var bx = Math.floor(e.x);
           var by = Math.floor(e.y);
 
