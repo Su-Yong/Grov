@@ -71,12 +71,12 @@ window.onload = function() {
 
   window.onkeydown = function(e) {
     var key = e.keyCode;
-    if(key == 65) {
+    if(key === 65) {
       Napxe.get("Player").setVel(180, 3);
-    } else if(key == 68) {
+    } else if(key === 68) {
       Napxe.get("Player").setVel(0, 3);
-    } else if(key == 87) {
+    } else if(key === 87) {
       Napxe.get("Player").setVel(90, 6);
     }
-  }
-}
+  };
+};
