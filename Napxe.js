@@ -247,6 +247,8 @@ Napxe.run = function() {
 
   Napxe.list = [];
   var c = 0;
+  // {c} is defined but never used.
+
   for(var x = 0; x < Napxe.map.length; x++) {
     Napxe.list[x] = [];
     for(var y = 0; y < Napxe.map[x].length; y++) {
@@ -415,6 +417,7 @@ Component.prototype.update = function(tag) {
           var my = Math.floor(me.y) + 0.5;
           var bx = Math.floor(e.x);
           var by = Math.floor(e.y);
+          // {mx}, {my}, {bx}, and {by} are defined but never used.
 
           if(me.collisionListener !== null) {
             me.collisionListener(me, e, i);
