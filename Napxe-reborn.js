@@ -22,8 +22,36 @@
 var Napxe = {
   Level: null,
   Canvas: null,
-  Context: null
+  Context: null,
+  KeyBinder: null
 };
+
+Napxe.keyBinder = function() {
+  this.keys = [];
+  var map = [];
+  window.onkeydown = function(e){
+    e = e || event;
+    map[e.keyCode] = e.type == 'keydown';
+    for(var i in this.keys) {
+      var keys = this.keys.key;
+      if(keys.length == 2) {
+        if(map[keys[0]]) {
+          keys[0].func();
+        }
+        if(map[keys[1]]) {
+          keys[1].func();
+        }
+      } else if(map[keys]) {
+        keys.func();
+      }
+    }
+  }
+};
+
+Napxe.keyBinder.prototype.setKeyBind = function(keys, func) {
+  this.keys.push({key: keys, func: func});
+  return this;
+}
 
 var Level = function() {
   this.width = 0;
