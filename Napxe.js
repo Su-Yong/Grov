@@ -15,7 +15,7 @@ var keyCodes = {
   3 : "break",
   8 : "backspace / delete",
   9 : "tab",
-  12 : 'clear',
+  12 : "clear",
   13 : "enter",
   16 : "shift",
   17 : "ctrl ",
@@ -126,14 +126,14 @@ var keyCodes = {
   144 : "num lock ",
   145 : "scroll lock",
   160 : "^",
-  161: '!',
+  161: "!",
   163 : "#",
-  164: '$',
-  165: 'ù',
+  164: "$",
+  165: "ù",
   166 : "page backward",
   167 : "page forward",
   169 : "closing paren (AZERTY)",
-  170: '*',
+  170: "*",
   171 : "~ + * key",
   173 : "minus (firefox), mute/unmute",
   174 : "decrease volume level",
@@ -197,7 +197,7 @@ Napxe.setCanvas = function(canvas) {
 Napxe.setKeyBind = function(key, func) {
   var keycode = 0;
   for(var i in keyCodes) {
-    if(keyCodes[i] == key) {
+    if(keyCodes[i] === key) {
       keycode = i;
       console.log(key + " " + i);
 
@@ -205,22 +205,22 @@ Napxe.setKeyBind = function(key, func) {
       return;
     }
   }
-  for(var i in keyCodes) {
-    if(keyCodes[i].indexOf(key)) {
-      keycode = i;
-      console.log(key + " " + i);
+  for(var j in keyCodes) {
+    if(keyCodes[j].indexOf(key)) {
+      keycode = j;
+      console.log(key + " " + j);
 
       Napxe.keys.push({key: keycode, func: func});
       return;
     }
   }
-}
+};
 
 Napxe.get = function(id) {
   for(var x in Napxe.list) {
     for(var y in Napxe.list[x]) {
       if(Napxe.list[x][y] !== null)
-      if(Napxe.list[x][y].id == id)
+      if(Napxe.list[x][y].id === id)
         return Napxe.list[x][y];
     }
   }
@@ -230,7 +230,7 @@ Napxe.run = function() {
   window.onkeydown = function(e) {
     var key = e.keyCode;
     for(var i in Napxe.keys) {
-      if(Napxe.keys[i].key == key) {
+      if(Napxe.keys[i].key === key) {
         Napxe.keys[i].func();
       }
     }
@@ -243,17 +243,19 @@ Napxe.run = function() {
           Napxe.list[x][y].speed = 0;
       }
     }
-  }
+  };
 
   Napxe.list = [];
   var c = 0;
+  // {c} is defined but never used.
+
   for(var x = 0; x < Napxe.map.length; x++) {
     Napxe.list[x] = [];
     for(var y = 0; y < Napxe.map[x].length; y++) {
       var obj = Napxe.linker[Napxe.map[x][y]];
 
-      Napxe.list[x][y] = (typeof obj != "object" || obj === null) ? null : Object.create(obj);
-      if(typeof obj == "object" && obj !== null)
+      Napxe.list[x][y] = (typeof obj !== "object" || obj === null) ? null : Object.create(obj);
+      if(typeof obj === "object" && obj !== null)
         Napxe.list[x][y].init(y, x); // reverse
     }
   }
@@ -276,7 +278,7 @@ Napxe.Error = function() {
 };
 
 Napxe.log = function(value) {
-  if(Util.getObjectName(value) == "Napxe.Error")
+  if(Util.getObjectName(value) === "Napxe.Error")
     console.log(value.cause);
   else
     console.log(value);
@@ -357,7 +359,7 @@ Component.prototype.setVel = function(direction, speed) {
 
 Component.prototype.update = function(tag) {
   if(this.isMove) {
-    if(this.last_direction.toFixed(2) != this.direction.toFixed(2)) {
+    if(this.last_direction.toFixed(2) !== this.direction.toFixed(2)) {
       if(Math.abs(this.direction - this.last_direction) < 0.3) {
         this.direction = this.last_direction;
       }
@@ -369,7 +371,7 @@ Component.prototype.update = function(tag) {
     }
     console.log(this.direction.toFixed(2) + " : " + this.last_direction.toFixed(2));
 
-    if(this.speed.toFixed(2) != this.last_speed.toFixed(2)) {
+    if(this.speed.toFixed(2) !== this.last_speed.toFixed(2)) {
       if(Math.abs(this.speed - this.last_speed) < 0.7) {
         this.last_speed = this.speed;
       }
@@ -409,26 +411,27 @@ Component.prototype.update = function(tag) {
       try {
         if(e !== null)
         if(e.material.solid > 0)
-        if(Math.abs(me.x - e.x) <= 1 && Math.abs(me.y - e.y) <= 1 && (me.x != e.x || me.y != e.y)) {
+        if(Math.abs(me.x - e.x) <= 1 && Math.abs(me.y - e.y) <= 1 && (me.x !== e.x || me.y !== e.y)) {
 
-          var mx = Math.floor(me.x); + 0.5;
-          var my = Math.floor(me.y); + 0.5;
+          var mx = Math.floor(me.x) + 0.5;
+          var my = Math.floor(me.y) + 0.5;
           var bx = Math.floor(e.x);
           var by = Math.floor(e.y);
+          // {mx}, {my}, {bx}, and {by} are defined but never used.
 
           if(me.collisionListener !== null) {
             me.collisionListener(me, e, i);
           }
 
-          if(i == 2) {
+          if(i === 2) {
             me.x = e.x - 1.001;
             //console.log("right wall");
             me.count *= 1 - Math.cos(me.environment.gravityDirection);
-          }else if (i == 1) {
+          }else if (i === 1) {
             me.x = e.x + 1.001;
             //console.log("left wall");
             me.count *= Math.cos(me.environment.gravityDirection);
-          } else if(i == 3) {
+          } else if(i === 3) {
             me.y = e.y + 1.001;
             //console.log("roof");
             me.count *= Math.sin(me.environment.gravityDirection);
@@ -467,7 +470,7 @@ Component.prototype.init = function(x, y) {
 };
 
 Component.prototype.render = function(canvas) {
-  if(typeof this.material.texture == "string") {
+  if(typeof this.material.texture === "string") {
     canvas.fillStyle = this.material.texture;
     canvas.fillRect(this.x * Napxe.per, this.y * Napxe.per, this.width * Napxe.per, this.height * Napxe.per);/*
     canvas.fillStyle = "#ff0000";
