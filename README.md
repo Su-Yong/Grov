@@ -1,4 +1,4 @@
-# Napxe-for-js
+# Grov
 The extendable js web game engine
 
 <pre>
@@ -23,14 +23,14 @@ This is simple web game engine. It use a html5 canvas
 + Low lags
 
 # Running
-1. Download this repository and insert your project in Napxe.js
-2. Load Napxe.js from main html file
+1. Download this repository and insert your project in Grov.js
+2. Load Grov.js from main html file
 3. Use the engine!
-example is Napxe-Example.js file
+example is Grov-Example.js file
 
 # Tips
 This is developing version. You shouldn't use this library now.
 
 ---
 
-Copyright 2016 SYPlanP. all rights reserved.
+Copyright 2016. SY all rights reserved.
