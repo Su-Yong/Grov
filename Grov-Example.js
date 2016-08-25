@@ -7,23 +7,28 @@ window.onload = function() {
   ground.setWeight(10);
 
   var player = new Component(0);
-  player.setWidth(1);
-  player.setHeight(1);
+  player.setWidth(2);
+  player.setHeight(2);
   player.setWeight(1);
+  player.id = "player";
+  player.setRotate(45);
 
-  var map = [1, 1, 1, 1, 1,
-             1, 0, 0, 0, 1,
-             1, 0, 2, 0, 1,
-             1, 0, 0, 0, 1,
-             1, 1, 1, 1, 1,];
+  var map = [1, 1, 1, 1, 1, 1, 1,
+             1, 0, 0, 0, 0, 0, 1,
+             1, 0, 0, 0, 0, 0, 1,
+             1, 0, 0, 2, 0, 0, 1,
+             1, 0, 0, 0, 0, 0, 1,
+             1, 0, 0, 0, 0, 0, 1,
+             1, 0, 0, 0, 0, 0, 1,
+             1, 1, 1, 1, 1, 1, 1];
   var linker = [
     null,
     ground,
     player
   ];
 
-  level.setWidth(5);
-  level.setHeight(5);
+  level.setWidth(7);
+  level.setHeight(8);
   level.setMapLinker(linker);
   level.setMap(map);
   Grov.addLevel(level);

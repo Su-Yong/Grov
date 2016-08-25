@@ -24,7 +24,7 @@ var Grov = {
   Canvas: null,
   Context: null,
   KeyBinder: null,
-  Frame: 120,
+  Frame: 10,
   Scale: 16,
   Stage: 0,
 };
@@ -101,6 +101,7 @@ Level.prototype.setMap = function(map) {
       var element = Object.create(this.Linker[map[i]]);
       element.x = Math.floor(i / this.width);
       element.y = i % this.width;
+      element.id += "#" + element.x + ":" + element.y;
       this.Elements.push(element);
     }
   }
@@ -121,6 +122,7 @@ var Component = function() {
   this.width = 0;
   this.height = 0;
   this.weight = 1;
+  this.id = "Component";
   this.isStatic = false;
 
   this.speed = [0, 0];
@@ -131,7 +133,7 @@ var Component = function() {
     indexAngle: 0,
     maxLength: 0,
     maxInLength: 0,
-    isCollision: false
+    isCollision: [],
   };
 };
 
@@ -154,28 +156,50 @@ Component.prototype.setRotate = function(angle) {
   this.angleUpdate();
   return this;
 };
+Component.prototype.getId = function() {
+  return this.id.split("#")[0];
+};
 Component.prototype.angleUpdate = function() {
   this._.maxInLength = Math.hypot((this.width / 2), (this.height / 2));
-  this._.indexAngle = Math.asin(this._.maxInLength / (this.width / 2));
+  this._.indexAngle = Math.acos((this.width / 2) / this._.maxInLength);
   this._.maxLength = this._.maxInLength * ((this._.indexAngle - this.angle > this._.indexAngle / 2) ? Math.cos(this._.indexAngle - this.angle - this._.indexAngle / 2) : Math.cos(this._.indexAngle - this.angle));
+  console.log(this._.maxInLength + " : " + this._.indexAngle + " : " + this._.maxLength);
   return this;
 };
 Component.prototype.collisionUpdate = function(element) {
-  //console.log(Math.hypot((this.width / 2), (this.height / 2)) + Math.hypot((element.width / 2), (element.height / 2)));
-  console.log(Math.hypot(Math.abs(this.x - element.x), Math.abs(this.y - element.y)));
-  if(Math.hypot(Math.abs(this.x - element.x), Math.abs(this.y - element.y)) <= Math.hypot((this.width / 2), (this.height / 2)) + Math.hypot((element.width / 2), (element.height / 2))) {
-    this._.isCollision = true;
+  if(Math.hypot(Math.abs(this.x - element.x), Math.abs(this.y - element.y)) <= this._.maxInLength + element._.maxInLength) {
+    if(this.y < element.y) {
+      //console.log((this.y + this._.maxLength).toFixed(2) + " : " + (element.y - element._.maxLength).toFixed(2));
+      if(this.y + this._.maxLength >= element.y - element._.maxLength) {
+        console.log("collision");
+      }
+    } else if(this.y > element.y) {
+      if(this._.y + this._.maxLength <= element.y - element._.maxLength) {
+        console.log("collision");
+      }
+    } else {
+
+    }
+    this._.isCollision[element.id] = true;
   } else {
-    this._.isCollision = false;
+    this._.isCollision[element.id] = false;
   }
 };
 Component.prototype.update = function() {
   var me = this;
   Grov.Level[Grov.Stage].Elements.forEach(function(e, i) {
-    me.collisionUpdate(e);
+    if(e.getId() !== me.getId()) {
+      me.collisionUpdate(e);
+    }
   });
-  if(!this._.isCollision) {
-    this.y += 0.01;
+  for(var i in this._.isCollision) {
+    if(!this._.isCollision[i]) {
+      this.y += 0.001;
+      //collision
+    } else {
+      //console.log("stop");
+      //not
+    }
   }
 };
 Component.prototype.setVel = function(direction, speed) {
