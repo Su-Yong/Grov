@@ -24,7 +24,7 @@ var Grov = {
   Canvas: null,
   Context: null,
   KeyBinder: null,
-  Frame: 10,
+  Frame: 30,
   Scale: 16,
   Stage: 0,
 };
@@ -163,12 +163,46 @@ Component.prototype.angleUpdate = function() {
   this._.maxInLength = Math.hypot((this.width / 2), (this.height / 2));
   this._.indexAngle = Math.acos((this.width / 2) / this._.maxInLength);
   this._.maxLength = this._.maxInLength * ((this._.indexAngle - this.angle > this._.indexAngle / 2) ? Math.cos(this._.indexAngle - this.angle - this._.indexAngle / 2) : Math.cos(this._.indexAngle - this.angle));
-  console.log(this._.maxInLength + " : " + this._.indexAngle + " : " + this._.maxLength);
+  //console.log(this._.maxInLength + " : " + this._.indexAngle + " : " + this._.maxLength);
   return this;
 };
 Component.prototype.collisionUpdate = function(element) {
-  if(Math.hypot(Math.abs(this.x - element.x), Math.abs(this.y - element.y)) <= this._.maxInLength + element._.maxInLength) {
-    if(this.y < element.y) {
+  if(Math.hypot(Math.abs(this.x - element.x), Math.abs(this.y - element.y)) <= 1.5 * (this._.maxInLength + element._.maxInLength)) {
+    var axis = []; // this x, this y, element x, element y
+    var leng = [];
+    var lengA = []; // this
+    var lengB = []; // element
+
+    axis[0] = (this.angle) % 180;
+    axis[1] = (this.angle + 90) % 180;
+    axis[2] = (element.angle) % 180;
+    axis[3] = (element.angle + 90) % 180;
+
+    lengA[0] = Math.abs(this.width / 2).toFixed(4);
+    lengB[0] = Math.abs(element._.maxInLength * Math.cos(element.angle - axis[0])).toFixed(4);
+
+    lengA[1] = Math.abs(this.height / 2).toFixed(4);
+    lengB[1] = Math.abs(element._.maxInLength * Math.cos((element.angle + 90) - axis[1])).toFixed(4);
+
+    lengA[2] = Math.abs(this._.maxInLength * Math.cos(this.angle - axis[2])).toFixed(4);
+    lengB[2] = Math.abs(element.width / 2).toFixed(4);
+
+    lengA[3] = Math.abs(this._.maxInLength * Math.cos((this.angle + 90) - axis[3])).toFixed(4);
+    lengB[3] = Math.abs(element.height / 2).toFixed(4);
+
+    var L = Math.hypot(Math.abs(this.x - element.x), Math.abs(this.y - element.y));
+    leng[0] = Math.abs(L * Math.cos(axis[0])).toFixed(4);
+    leng[1] = Math.abs(L * Math.cos(axis[1])).toFixed(4);
+    leng[2] = Math.abs(L * Math.cos(axis[2])).toFixed(4);
+    leng[3] = Math.abs(L * Math.cos(axis[3])).toFixed(4);
+    if(lengA[0] > leng[0] - lengB[0] &&
+       lengA[1] > leng[1] - lengB[1] &&
+       lengA[2] > leng[2] - lengB[2] &&
+       lengA[3] > leng[3] - lengB[3]) {
+      console.log("Collision!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    }
+    //console.log(element.id + ":\n  " + leng + "\n  " + lengA + "\n  " + lengB);
+    /*if(this.y < element.y) {
       //console.log((this.y + this._.maxLength).toFixed(2) + " : " + (element.y - element._.maxLength).toFixed(2));
       if(this.y + this._.maxLength >= element.y - element._.maxLength) {
         console.log("collision");
@@ -183,8 +217,10 @@ Component.prototype.collisionUpdate = function(element) {
     this._.isCollision[element.id] = true;
   } else {
     this._.isCollision[element.id] = false;
+  }*/
   }
 };
+var a = 0;
 Component.prototype.update = function() {
   var me = this;
   Grov.Level[Grov.Stage].Elements.forEach(function(e, i) {
@@ -192,6 +228,14 @@ Component.prototype.update = function() {
       me.collisionUpdate(e);
     }
   });
+  if(a===0)
+    this.y += 0.01;
+  if(a===1)
+    this.y -= 0.01;
+  if(a===2)
+    this.x += 0.01;
+  if(a===3)
+    this.x -= 0.01;
   for(var i in this._.isCollision) {
     if(!this._.isCollision[i]) {
       this.y += 0.001;
