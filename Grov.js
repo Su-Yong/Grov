@@ -172,60 +172,34 @@ Component.prototype.collisionUpdate = function(element) {
     var lengA = []; // this
     var lengB = []; // element
 
-    axis[0] = Math.abs((this.angle) % 180);
-    axis[1] = Math.abs((this.angle + 90) % 180);
-    axis[2] = Math.abs((element.angle) % 180);
-    axis[3] = Math.abs((element.angle + 90) % 180);
-    // 라디안 각도 문제
+    axis[0] = Math.abs((this.angle) % 90);
+    axis[1] = Math.abs((this.angle + 90) % 90);
+    axis[2] = Math.abs((element.angle) % 90);
+    axis[3] = Math.abs((element.angle + 90) % 90);
+
     lengA[0] = Math.abs(this.width / 2);//.toFixed(4);
-    lengB[0] = Math.abs(element._.maxInLength * Math.cos((((element._.indexAngle / 2) + axis[0]) % 90) * (Math.PI / 180)));//.toFixed(4);
+    lengB[0] = Math.abs(element._.maxInLength * Math.cos((((element._.indexAngle / 2) - axis[0] - element.angle) % 90) * (Math.PI / 180)));//.toFixed(4);
 
     lengA[1] = Math.abs(this.height / 2);//.toFixed(4);
-    lengB[1] = Math.abs(element._.maxInLength * Math.cos((((element._.indexAngle / 2) + axis[1]) % 90) * (Math.PI / 180)));//.toFixed(4);
+    lengB[1] = Math.abs(element._.maxInLength * Math.cos((((element._.indexAngle / 2) - axis[1] - element.angle) % 90) * (Math.PI / 180)));//.toFixed(4);
 
-    lengA[2] = Math.abs(this._.maxInLength * Math.cos((((this._.indexAngle / 2) + axis[2]) % 90) * (Math.PI / 180)));//.toFixed(4);
+    lengA[2] = Math.abs(this._.maxInLength * Math.cos((((this._.indexAngle / 2) - axis[2] - this.angle) % 90) * (Math.PI / 180)));//.toFixed(4);
     lengB[2] = Math.abs(element.width / 2);//.toFixed(4);
 
-    lengA[3] = Math.abs(this._.maxInLength * Math.cos((((this._.indexAngle / 2) + axis[3]) % 90) * (Math.PI / 180)));//.toFixed(4);
+    lengA[3] = Math.abs(this._.maxInLength * Math.cos((((this._.indexAngle / 2) - axis[3] - this.angle) % 90) * (Math.PI / 180)));//.toFixed(4);
     lengB[3] = Math.abs(element.height / 2);//.toFixed(4);
 
     var L = Math.hypot(Math.abs(this.x - element.x), Math.abs(this.y - element.y));
-    leng[0] = Math.abs(L * Math.cos(axis[0]));//.toFixed(4);
-    leng[1] = Math.abs(L * Math.cos(axis[1]));//.toFixed(4);
-    leng[2] = Math.abs(L * Math.cos(axis[2]));//.toFixed(4);
-    leng[3] = Math.abs(L * Math.cos(axis[3]));//.toFixed(4);
+    leng[0] = Math.abs(L * Math.cos(axis[1] * (Math.PI / 180)));//.toFixed(4);
+    leng[1] = Math.abs(L * Math.cos(axis[0] * (Math.PI / 180)));//.toFixed(4);
+    leng[2] = Math.abs(L * Math.cos(axis[3] * (Math.PI / 180)));//.toFixed(4);
+    leng[3] = Math.abs(L * Math.cos(axis[2] * (Math.PI / 180)));//.toFixed(4);
     if(lengA[0] > leng[0] - lengB[0] &&
        lengA[1] > leng[1] - lengB[1] &&
        lengA[2] > leng[2] - lengB[2] &&
        lengA[3] > leng[3] - lengB[3]) {
       console.log("Collision!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
-    /*console.log((lengA[0] - (leng[0] - lengB[0])) + "\n" +
-                (lengA[1] - (leng[1] - lengB[1])) + "\n" +
-                (lengA[2] - (leng[2] - lengB[2])) + "\n" +
-                (lengA[3] - (leng[3] - lengB[3])) + "\n");*/
-    //console.log(element._.indexAngle + " : " + this._.indexAngle);
-    console.log(element.id + ":\n  " + leng + "\n  " + lengA + "\n  " + lengB);
-    console.log(axis);
-    //console.log(element._.maxInLength);
-    //console.log(((element._.indexAngle / 2) + axis[0]) % 90);
-    //console.log(((element._.indexAngle / 2) + axis[0]) % 90);
-    /*if(this.y < element.y) {
-      //console.log((this.y + this._.maxLength).toFixed(2) + " : " + (element.y - element._.maxLength).toFixed(2));
-      if(this.y + this._.maxLength >= element.y - element._.maxLength) {
-        console.log("collision");
-      }
-    } else if(this.y > element.y) {
-      if(this._.y + this._.maxLength <= element.y - element._.maxLength) {
-        console.log("collision");
-      }
-    } else {
-
-    }
-    this._.isCollision[element.id] = true;
-  } else {
-    this._.isCollision[element.id] = false;
-  }*/
   }
 };
 var a = 0;
@@ -266,6 +240,8 @@ Component.prototype.setVel = function(direction, speed) {
 };
 Component.prototype.render = function() {
   Grov.Context.fillStyle = "#00A4FF";
+  if(this.getId() == "player")
+    Grov.Context.fillStyle = "#BDBDBD";
   Grov.Context.save();
   Grov.Context.translate(this.x * Grov.Scale + (this.width * Grov.Scale / 2), this.y * Grov.Scale + (this.height * Grov.Scale / 2));
   Grov.Context.rotate(this.angle * Math.PI / 180);
