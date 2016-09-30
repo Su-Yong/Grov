@@ -85,7 +85,7 @@ Grov.setCanvas = function(canvas) {
     Grov.Level[Grov.Stage].UIElements.forEach(function(e, i) {
       if(e.x < x && x < e.x + e.width) {
         if(e.y < y && y < e.y + e.height) {
-
+          e._.isOver = false;
         }
       }
     });
@@ -113,9 +113,9 @@ Grov.setCanvas = function(canvas) {
     var x = event.clientX - Grov.Canvas.offsetLeft;
     var y = event.clientY - Grov.Canvas.offsetTop;
     Grov.Level[Grov.Stage].UIElements.forEach(function(e, i) {
+      e._.isPressed = false;
       if(e.x < x && x < e.x + e.width) {
         if(e.y < y && y < e.y + e.height) {
-          e._.isPressed = false;
           if(e._.pressValue < Grov.Frame * 0.08 && e._.pressValue > 0) {
             e.listener.click();
           }
@@ -500,19 +500,19 @@ UI.Button.prototype.renderNormal = function() {
   Grov.Context.save();
   Grov.Context.lineWidth = Math.max(5, size / 7);
   Grov.Context.textAlign = "center";
-  Grov.Context.font = size + "px Nanum Gothic";
+  Grov.Context.font = size + "px Product Sans, Nanum Gothic";
 
   Grov.Context.strokeStyle = ColorLuminance(this.background, -0.2);
   Grov.Context.fillStyle = ColorLuminance(this.background, -0.2);
 
-  Grov.Context.fillText(this.text, this.width / 2, this.height / 2 + size / 2 + 1);
-  Grov.Context.strokeRoundRect(5, 5 + 2, this.width - 5, this.height - 5 + 2, 5);
+  Grov.Context.fillText(this.text, this.width / 2 + this.x, this.height / 2 + size / 2 + 1 + this.y);
+  Grov.Context.strokeRoundRect(5 + this.x, 5 + 2 + this.y, this.width - 5, this.height - 5 + 2, 5);
 
   Grov.Context.strokeStyle = this.background;
   Grov.Context.fillStyle = this.background;
 
-  Grov.Context.fillText(this.text, this.width / 2, this.height / 2 + size / 2);
-  Grov.Context.strokeRoundRect(5, 5, this.width - 5, this.height - 5, 5);
+  Grov.Context.fillText(this.text, this.width / 2 + this.x, this.height / 2 + size / 2 + this.y);
+  Grov.Context.strokeRoundRect(5 + this.x, 5 + this.y, this.width - 5, this.height - 5, 5);
 
   Grov.Context.restore();
 };
@@ -522,19 +522,19 @@ UI.Button.prototype.renderOver = function() {
   Grov.Context.save();
   Grov.Context.lineWidth = Math.max(5, size / 7);
   Grov.Context.textAlign = "center";
-  Grov.Context.font = size + "px Nanum Gothic";
+  Grov.Context.font = size + "px Product Sans, Nanum Gothic";
 
   Grov.Context.strokeStyle = ColorLuminance(this.background, -0.4);
   Grov.Context.fillStyle = ColorLuminance(this.background, -0.4);
 
-  Grov.Context.fillText(this.text, this.width / 2, this.height / 2 + size / 2 + 1);
-  Grov.Context.strokeRoundRect(5, 5 + 2, this.width - 5, this.height - 5 + 2, 5);
+  Grov.Context.fillText(this.text, this.width / 2 + this.x, this.height / 2 + size / 2 + 1 + this.y);
+  Grov.Context.strokeRoundRect(5 + this.x, 5 + 2 + this.y, this.width - 5, this.height - 5 + 2, 5);
 
   Grov.Context.strokeStyle = ColorLuminance(this.background, -0.2);
   Grov.Context.fillStyle = ColorLuminance(this.background, -0.2);
 
-  Grov.Context.fillText(this.text, this.width / 2, this.height / 2 + size / 2);
-  Grov.Context.strokeRoundRect(5, 5, this.width - 5, this.height - 5, 5);
+  Grov.Context.fillText(this.text, this.width / 2 + this.x, this.height / 2 + size / 2 + this.y);
+  Grov.Context.strokeRoundRect(5 + this.x, 5 + this.y, this.width - 5, this.height - 5, 5);
 
   Grov.Context.restore();
 };
@@ -545,19 +545,19 @@ UI.Button.prototype.renderPressed = function() {
   Grov.Context.save();
   Grov.Context.lineWidth = Math.max(5, size / 7);
   Grov.Context.textAlign = "center";
-  Grov.Context.font = size + "px Nanum Gothic";
+  Grov.Context.font = size + "px Product Sans, Nanum Gothic";
 
   Grov.Context.fillStyle = ColorLuminance(this.background, -0.2);
-  Grov.Context.fillRoundRect(5 - padding, 5 + 2 - padding, this.width - 5 + padding, this.height - 5 + 2 + padding, 5);
+  Grov.Context.fillRoundRect(5 - padding + this.x, 5 + 2 - padding + this.y, this.width - 5 + padding, this.height - 5 + 2 + padding, 5);
 
   Grov.Context.fillStyle = this.background;
-  Grov.Context.fillRoundRect(5 - padding, 5 - padding, this.width - 5 + padding, this.height - 5 + padding, 5);
+  Grov.Context.fillRoundRect(5 - padding + this.x, 5 - padding + this.y, this.width - 5 + padding, this.height - 5 + padding , 5);
 
   Grov.Context.fillStyle = ColorLuminance(this.background, -0.2);
-  Grov.Context.fillText(this.text, this.width / 2, this.height / 2 + size / 2 - 2);
+  Grov.Context.fillText(this.text, this.width / 2 + this.x, this.height / 2 + size / 2 - 2 + this.y);
 
   Grov.Context.fillStyle = "#FFFFFF";
-  Grov.Context.fillText(this.text, this.width / 2, this.height / 2 + size / 2);
+  Grov.Context.fillText(this.text, this.width / 2 + this.x, this.height / 2 + size / 2 + this.y);
 
   Grov.Context.restore();
 };
@@ -565,15 +565,14 @@ UI.Button.prototype.render = function() {
   if(this._.isOver) {
     this.renderOver();
     Grov.Canvas.setAttribute("style", "cursor: pointer");
+    if(this._.isPressed) {
+      this.renderPressed();
+    }
   }
   else {
     this.renderNormal();
     Grov.Canvas.setAttribute("style", "cursor: cursor");
     console.log("AAAA");
-  }
-  if(this._.isPressed) {
-    Grov.Canvas.setAttribute("style", "cursor: pointer");
-    this.renderPressed();
   }
 };
 
