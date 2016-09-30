@@ -19,6 +19,20 @@
 *  Copyright 2016. SY all rights reserved.
 */
 
+(function() {
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = 'https://fonts.googleapis.com/earlyaccess/nanumgothic.css?family=Nanum+Gothic';
+  var link2 = document.createElement('link');
+  link2.rel = 'stylesheet';
+  link2.type = 'text/css';
+  link2.href = 'https://fonts.googleapis.com/css?family=Product+Sans';
+
+  document.getElementsByTagName('head')[0].appendChild(link);
+  document.getElementsByTagName('head')[0].appendChild(link2);
+})();
+
 var Direction = {
   LEFT: 0,
   LEFT_UP: 1,
@@ -46,6 +60,72 @@ var Grov = {
 Grov.setCanvas = function(canvas) {
   Grov.Canvas = canvas;
   Grov.Context = canvas.getContext("2d");
+  Grov.Canvas.onmousemove = function(event) {
+    var x = event.clientX - Grov.Canvas.offsetLeft;
+    var y = event.clientY - Grov.Canvas.offsetTop;
+    Grov.Level[Grov.Stage].UIElements.forEach(function(e, i) {
+      if(e.x < x && x < e.x + e.width) {
+        if(e.y < y && y < e.y + e.height) {
+          try {
+            e.listener.over();
+          } catch(err) {}
+          e._.isOver = true;
+        } else {
+          e._.isOver = false;
+        }
+      } else {
+        e._.isOver = false;
+      }
+    });
+  };
+
+  Grov.Canvas.onmouseout = function(event) {
+    var x = event.clientX - Grov.Canvas.offsetLeft;
+    var y = event.clientY - Grov.Canvas.offsetTop;
+    Grov.Level[Grov.Stage].UIElements.forEach(function(e, i) {
+      if(e.x < x && x < e.x + e.width) {
+        if(e.y < y && y < e.y + e.height) {
+
+        }
+      }
+    });
+  };
+  Grov.Canvas.onmousedown = function(event) {
+    var x = event.clientX - Grov.Canvas.offsetLeft;
+    var y = event.clientY - Grov.Canvas.offsetTop;
+    Grov.Level[Grov.Stage].UIElements.forEach(function(e, i) {
+      console.log(e._.pressValue);
+      if(e.x < x && x < e.x + e.width) {
+        if(e.y < y && y < e.y + e.height) {
+          e._.isPressed++;
+          e._.isPressed = true;
+        } else {
+          e._.pressValue = 0;
+          e._.isPressed = false;
+        }
+      } else {
+        e._.pressValue = 0;
+        e._.isPressed = false;
+      }
+    });
+  };
+  Grov.Canvas.onmouseup = function(event) {
+    var x = event.clientX - Grov.Canvas.offsetLeft;
+    var y = event.clientY - Grov.Canvas.offsetTop;
+    Grov.Level[Grov.Stage].UIElements.forEach(function(e, i) {
+      if(e.x < x && x < e.x + e.width) {
+        if(e.y < y && y < e.y + e.height) {
+          e._.isPressed = false;
+          if(e._.pressValue < Grov.Frame * 0.08 && e._.pressValue > 0) {
+            e.listener.click();
+          }
+          if(e._.pressValue > Grov.Frame * 0.12) {
+            e.listener.longClick();
+          }
+        }
+      }
+    });
+  };
   return Grov;
 };
 
@@ -82,9 +162,18 @@ Grov.keyBinder.prototype.setKeyBind = function(keys, func) {
 Grov.run = function() {
   setInterval(function() {
     Grov.Context.clearRect(0, 0, Grov.Canvas.width, Grov.Canvas.height);
+    Grov.Context.imageSmoothingEnabled = true;
     Grov.Level[Grov.Stage].Elements.forEach(function(e, i) {
       if(e.weight == 1)
         e.update();
+      e.render();
+    });
+    Grov.Level[Grov.Stage].UIElements.forEach(function(e, i) {
+      if(e._.isPressed) {
+        e._.pressValue++;
+      } else {
+        e._.pressValue = 0;
+      }
       e.render();
     });
   }, 1000 / Grov.Frame);
@@ -95,6 +184,7 @@ var Level = function() {
   this.height = 0;
   this.linker = [];
   this.Elements = [];
+  this.UIElements = [];
 };
 
 Level.prototype.setWidth = function(width) {
@@ -186,6 +276,10 @@ Component.prototype.setRotate = function(angle) {
 Component.prototype.getId = function() {
   return this.id.split("#")[0];
 };
+Component.prototype.setTexture = function(texture) {
+  this.texture = texture;
+};
+
 Component.prototype.angleUpdate = function() {
   this._.maxInLength = Math.hypot((this.width / 2), (this.height / 2));
   this._.indexAngle = Math.acos(this.width / (2 * this._.maxInLength)) * (180 / Math.PI) * 2;
@@ -231,13 +325,33 @@ Component.prototype.collisionUpdate = function(element) {
       data.meAngle = this.angle % 90;
       data.elementAngle = element.angle % 90;
       data.angle = element.angle % 90 - this.angle % 90;
-      console.log(data.angle);
-      if(element.angle % 90 - (45 - this.angle % 90) > 2.5) {
-        data.direction = Direction.RIGHT;
-      } else if(element.angle % 90 - (45 - this.angle % 90) < -2.5) {
+
+      var AD = [];
+      var _AD = [];
+      AD[0] = Math.abs(axis[0] - this.gravityDirection % 90);
+      AD[1] = Math.abs(axis[1] - this.gravityDirection % 90);
+      AD[2] = Math.abs(axis[2] - this.gravityDirection % 90);
+      AD[3] = Math.abs(axis[3] - this.gravityDirection % 90);
+      _AD = Object.create(AD);
+
+      _AD.sort(function(a, b) {
+        return a - b;
+      });
+
+      var axisNum = 0;
+      for(var i in _AD) {
+        if(AD[0] == _AD[i]) {
+          axisNum = i;
+          break;
+        }
+      }
+
+      var A1 = lengA[0] + (axisNum % 2 == 0 ? this.width : this.height) * Math.cos(axis[axisNum]) + (axisNum % 2 == 0 ? this.x : element.y);
+      var B1 = lengB[0] + (axisNum % 2 == 0 ? element.width : element.height) * Math.cos(axis[axisNum]) + (axisNum % 2 == 0 ? element.x : element.y);
+      if(A1 - B1 > 0) {
         data.direction = Direction.LEFT;
       } else {
-        data.direction - Direction.MIDDLE;
+        data.direction = Direction.RIGHT;
       }
       this._.collision[element.id] = data;
     } else {
@@ -253,19 +367,19 @@ Component.prototype.moveUpdate = function(collision) {
   this.x += Math.sin(this.direction[1] * (Math.PI / 180)) * this.speed[1] * (Grov.Frame / 500) * 0.01;
   this.y += Math.cos(this.direction[1] * (Math.PI / 180)) * this.speed[1] * (Grov.Frame / 500) * 0.01;
 
-  if(collision !== null) {
-    if(collision.direction == Direction.LEFT) {
+  if(collision !== null) {/*
+    if(collision.direction === Direction.LEFT) {
       this.angle -= (45 - collision.angle) * (Grov.Frame / 500) * 0.03;
       this.x -= (45 - collision.angle) * (Grov.Frame / 500) * 0.0001;
       this.tick2++;
-    } else if(collision.direction == Direction.RIGHT) {
+    } else if(collision.direction === Direction.RIGHT) {
       this.angle += (45 - collision.angle) * (Grov.Frame / 500) * 0.03;
       this.x += (45 - collision.angle) * (Grov.Frame / 500) * 0.0001;
       this.tick2++;
     } else {
       this.angle = 0;
       this.tick2 = 0;
-    }
+    }*/
   }
   if(collision === null || !collision.isCollision) {
     if(this.useGravity) {
@@ -310,7 +424,7 @@ Component.prototype.setVel = function(direction, speed) {
   return this;
 };
 Component.prototype.render = function() {
-  Grov.Context.fillStyle = "#00A4FF";
+  Grov.Context.fillStyle = "#BDBDBD";
   if(this.getId() == "player")
     Grov.Context.fillStyle = "#BDBDBD";
   Grov.Context.save();
@@ -337,9 +451,14 @@ UI.Button = function() {
   this.background = null;
   this.text = "";
   this.listener = {
+    over: null,
     click: null,
     longClick: null,
-    doubleClick: null
+  };
+  this._ = {
+    isOver: false,
+    isPressed: false,
+    pressValue: 0,
   };
 };
 
@@ -375,6 +494,131 @@ UI.Button.prototype.setText = function(text) {
   this.text = text;
   return this;
 };
-UI.Button.prototype.render = function() {
+UI.Button.prototype.renderNormal = function() {
+  var size = Math.min((this.width - 20) / this.text.split("").length, this.height - 40);
 
+  Grov.Context.save();
+  Grov.Context.lineWidth = Math.max(5, size / 7);
+  Grov.Context.textAlign = "center";
+  Grov.Context.font = size + "px Nanum Gothic";
+
+  Grov.Context.strokeStyle = ColorLuminance(this.background, -0.2);
+  Grov.Context.fillStyle = ColorLuminance(this.background, -0.2);
+
+  Grov.Context.fillText(this.text, this.width / 2, this.height / 2 + size / 2 + 1);
+  Grov.Context.strokeRoundRect(5, 5 + 2, this.width - 5, this.height - 5 + 2, 5);
+
+  Grov.Context.strokeStyle = this.background;
+  Grov.Context.fillStyle = this.background;
+
+  Grov.Context.fillText(this.text, this.width / 2, this.height / 2 + size / 2);
+  Grov.Context.strokeRoundRect(5, 5, this.width - 5, this.height - 5, 5);
+
+  Grov.Context.restore();
 };
+UI.Button.prototype.renderOver = function() {
+  var size = Math.min((this.width - 20) / this.text.split("").length, this.height - 40);
+
+  Grov.Context.save();
+  Grov.Context.lineWidth = Math.max(5, size / 7);
+  Grov.Context.textAlign = "center";
+  Grov.Context.font = size + "px Nanum Gothic";
+
+  Grov.Context.strokeStyle = ColorLuminance(this.background, -0.4);
+  Grov.Context.fillStyle = ColorLuminance(this.background, -0.4);
+
+  Grov.Context.fillText(this.text, this.width / 2, this.height / 2 + size / 2 + 1);
+  Grov.Context.strokeRoundRect(5, 5 + 2, this.width - 5, this.height - 5 + 2, 5);
+
+  Grov.Context.strokeStyle = ColorLuminance(this.background, -0.2);
+  Grov.Context.fillStyle = ColorLuminance(this.background, -0.2);
+
+  Grov.Context.fillText(this.text, this.width / 2, this.height / 2 + size / 2);
+  Grov.Context.strokeRoundRect(5, 5, this.width - 5, this.height - 5, 5);
+
+  Grov.Context.restore();
+};
+UI.Button.prototype.renderPressed = function() {
+  var size = Math.min((this.width - 20) / this.text.split("").length, this.height - 40);
+  var padding = Math.max(5, size / 7) / 2;
+
+  Grov.Context.save();
+  Grov.Context.lineWidth = Math.max(5, size / 7);
+  Grov.Context.textAlign = "center";
+  Grov.Context.font = size + "px Nanum Gothic";
+
+  Grov.Context.fillStyle = ColorLuminance(this.background, -0.2);
+  Grov.Context.fillRoundRect(5 - padding, 5 + 2 - padding, this.width - 5 + padding, this.height - 5 + 2 + padding, 5);
+
+  Grov.Context.fillStyle = this.background;
+  Grov.Context.fillRoundRect(5 - padding, 5 - padding, this.width - 5 + padding, this.height - 5 + padding, 5);
+
+  Grov.Context.fillStyle = ColorLuminance(this.background, -0.2);
+  Grov.Context.fillText(this.text, this.width / 2, this.height / 2 + size / 2 - 2);
+
+  Grov.Context.fillStyle = "#FFFFFF";
+  Grov.Context.fillText(this.text, this.width / 2, this.height / 2 + size / 2);
+
+  Grov.Context.restore();
+};
+UI.Button.prototype.render = function() {
+  if(this._.isOver) {
+    this.renderOver();
+    Grov.Canvas.setAttribute("style", "cursor: pointer");
+  }
+  else {
+    this.renderNormal();
+    Grov.Canvas.setAttribute("style", "cursor: cursor");
+    console.log("AAAA");
+  }
+  if(this._.isPressed) {
+    Grov.Canvas.setAttribute("style", "cursor: pointer");
+    this.renderPressed();
+  }
+};
+
+// Thanks http://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-on-html-canvas
+CanvasRenderingContext2D.prototype.fillRoundRect = function(x, y, w, h, r) {
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  this.beginPath();
+  this.moveTo(x + r, y);
+  this.arcTo(x + w, y, x + w, y + h, r);
+  this.arcTo(x + w, y + h, x, y + h, r);
+  this.arcTo(x, y + h, x, y, r);
+  this.arcTo(x, y, x + w, y, r);
+  this.closePath();
+
+  this.fill();
+};
+CanvasRenderingContext2D.prototype.strokeRoundRect = function(x, y, w, h, r) {
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  this.beginPath();
+  this.moveTo(x + r, y);
+  this.arcTo(x + w, y, x + w, y + h, r);
+  this.arcTo(x + w, y + h, x, y + h, r);
+  this.arcTo(x, y + h, x, y, r);
+  this.arcTo(x, y, x + w, y, r);
+  this.closePath();
+
+  this.stroke();
+};
+
+//Thanks https://www.sitepoint.com/javascript-generate-lighter-darker-color/
+function ColorLuminance(hex, lum) {
+	hex = String(hex).replace(/[^0-9a-f]/gi, '');
+	if (hex.length < 6) {
+		hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+	}
+	lum = lum || 0;
+
+	var rgb = "#", c, i;
+	for (i = 0; i < 3; i++) {
+		c = parseInt(hex.substr(i*2,2), 16);
+		c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+		rgb += ("00"+c).substr(c.length);
+	}
+
+	return rgb;
+}
