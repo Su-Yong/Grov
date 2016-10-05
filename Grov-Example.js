@@ -1,79 +1,93 @@
 window.onload = function() {
   var canvas = document.getElementById("canvas");
-  var level = new Level();
-  var ground = new Component(0);
-  ground.setWidth(1);
-  ground.setHeight(1);
-  ground.setWeight(10);
-  ground.setRotate(0);
 
-  var map = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,];
+  var grass = createComponent("grass", "tile_ground_grass.png", true);
+  var dirt = createComponent("dirt", "tile_ground_dirt.png", true);
+  var jumper = createComponent("jumper", "tile_jumper.png", true);
+  var star = createComponent("star", "tile_star.png", false);
+
+  var ball = createComponent("ball", "tile_ball.png", true, function(component) {
+    component.type = "circle";
+    component.width = 0.6;
+    component.height = 0.6;
+    component.useGravity = true;
+    component.isStatic = false;
+    component.gravity = 0.064;
+  });
+
+  ball.listener.collision = function(e, a) {
+    if(e.getId() === "star") {
+      e.delete();
+      Grov.Stage++;
+    }
+    if(a < 45 || a > 315) {
+      if(e.getId() == "jumper")
+        ball.setVel(0, -4, "smooth");
+      else
+        ball.setVel(0, -2.5, "smooth");
+    }
+  };
+
   var linker = [
     null,
-    ground,
-    ground
+    ball,
+    grass,
+    dirt,
+    jumper,
+    star
   ];
+
+  var level = [];
+  for(var i = 0; i < Object.keys(map).length; i++) {
+    level[i] = createLevel(map["map" + (i + 1)], linker);
+    Grov.addLevel(level[i]);
+  }
+
+  Grov.Scale = 20;
+  Grov.setCanvas(canvas);
+  Grov.run();
+
+  /* DEBUG
+  Grov.keyBinder.setKeyBind("w", function() {
+    ball.setVel(0, -1.7);
+  });
+  Grov.keyBinder.setKeyBind("s", function() {
+    ball.setVel(0, 1.7);
+  });*/
+  Grov.keyBinder.setKeyBind("a", function() {
+    ball.setVel(100, -1.7);
+  });
+  Grov.keyBinder.setKeyBind("d", function() {
+    ball.setVel(100, 1.7);
+  });
+};
+
+function createComponent(id, texture, isSolid, func) {
+  var component = new Component("Rect");
+  component.setWidth(1);
+  component.setHeight(1);
+  component.setRotate(0);
+  component.isSolid = isSolid;
+
+  var image = new Image();
+  image.src = texture;
+  component.setTexture(image);
+  component.id = id;
+
+  if(typeof func === "function") {
+    func(component);
+  }
+
+  return component;
+}
+
+function createLevel(map, linker) {
+  var level = new Level();
 
   level.setWidth(25);
   level.setHeight(25);
   level.setMapLinker(linker);
   level.setMap(map);
 
-  var bt = new UI.Button();
-  bt.x = 0;
-  bt.y = 0;
-  bt.width = 200;
-  bt.height = 80;
-  bt.text = "Grov 제작자 웹페이지 가기";
-  bt.background = "#01579B";
-  bt.listener.click = function() {
-    window.open("http://syweb.kro.kr");
-  };
-  bt.listener.longClick = function() {
-    alert("♚♚히어로즈 오브 더 스☆톰♚♚가입시$$전원 카드팩☜☜뒷면100%증정※ ♜월드오브 워크래프트♜펫 무료증정￥ 특정조건 §§디아블로3§§★공허의유산★초상화획득기회@@ 즉시이동http://kr.battle.net/heroes/ko/");
-    alert("주간EVENT 무료 서비스/레스토랑급 시설/5대5 초이스/정원코스/항만코스/골짜기코스/에이스 매일밤 55명 출연/달콤살벌 노바/귀여운 동생 리리/상큼발랄 제이나/ ★【히오스】★ 24시간 영업 연중무휴 ｈｔｔｐ://ｋｒ.ｂａｔｔｌｅ.ｎｅｔ/ｈｅｒｏｅｓ/ｋｏ/");
-    window.open("http://kr.battle.net/heroes/ko/");
-  };
-  level.UIElements.push(bt);
-
-  Grov.Scale = 20;
-  Grov.addLevel(level);
-  Grov.setCanvas(canvas);
-
-  Grov.run();
-
-  window.onkeydown = function(e) {
-    if(e.keyCode == 87) {
-      player.setVel(180, 10);
-    }
-  };
-  window.onkeyup = function(e) {
-    if(e.keyCode == 87) {
-      player.setVel(180, 0);
-    }
-  };
-};
+  return level;
+}

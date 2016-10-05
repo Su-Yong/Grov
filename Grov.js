@@ -19,6 +19,12 @@
 *  Copyright 2016. SY all rights reserved.
 */
 
+// CAPTION - You CANNOT edit component's width and height!!!!!!!!!
+// CAPTION - You CANNOT edit component's width and height!!!!!!!!!
+// CAPTION - You CANNOT edit component's width and height!!!!!!!!!
+// CAPTION - You CANNOT edit component's width and height!!!!!!!!!
+// CAPTION - You CANNOT edit component's width and height!!!!!!!!!
+
 (function() {
   var link = document.createElement('link');
   link.rel = 'stylesheet';
@@ -94,7 +100,6 @@ Grov.setCanvas = function(canvas) {
     var x = event.clientX - Grov.Canvas.offsetLeft;
     var y = event.clientY - Grov.Canvas.offsetTop;
     Grov.Level[Grov.Stage].UIElements.forEach(function(e, i) {
-      console.log(e._.pressValue);
       if(e.x < x && x < e.x + e.width) {
         if(e.y < y && y < e.y + e.height) {
           e._.isPressed++;
@@ -132,39 +137,37 @@ Grov.setCanvas = function(canvas) {
 Grov.addLevel = function(level) {
   Grov.Level.push(level);
 };
-/*
-Grov.keyBinder = function() {
-  this.keys = [];
-  var map = [];
-  window.onkeydown = function(e) {
-    e = e || event;
-    map[e.keyCode] = e.type == 'keydown';
-    for(var i in this.keys) {
-      var keys = this.keys.key;
-      if(keys.length == 2) {
-        if(map[keys[0]]) {
-          keys[0].func();
-        }
-        if(map[keys[1]]) {
-          keys[1].func();
-        }
-      } else if(map[keys]) {
-        keys.func();
-      }
-    }
+Grov.keyBinder = {
+  customKeys: [],
+  key: {},
+};
+Grov.keyBinder.setKeyBind = function(keys, func) {
+  Grov.keyBinder.customKeys.push({key: keys, func: func});
+  return this;
+};
+Grov.keyBinder.start = function() {
+  window.onkeypress = function(e) {
+    e = e || window.event;
+    Grov.keyBinder.key[String.fromCharCode(e.keyCode || e.which).toLowerCase()] = true;
+  };
+  window.onkeyup = function(e) {
+    e = e || window.event;
+    Grov.keyBinder.key[String.fromCharCode(e.keyCode || e.which).toLowerCase()] = false;
   };
 };
 
-Grov.keyBinder.prototype.setKeyBind = function(keys, func) {
-  this.keys.push({key: keys, func: func});
-  return this;
-};*/
 Grov.run = function() {
+  Grov.keyBinder.start();
   setInterval(function() {
+    for(var i in Grov.keyBinder.customKeys) {
+      if(Grov.keyBinder.key[Grov.keyBinder.customKeys[i].key]) {
+        Grov.keyBinder.customKeys[i].func();
+      }
+    }
     Grov.Context.clearRect(0, 0, Grov.Canvas.width, Grov.Canvas.height);
     Grov.Context.imageSmoothingEnabled = true;
     Grov.Level[Grov.Stage].Elements.forEach(function(e, i) {
-      if(e.weight == 1)
+      if(!e.isStatic)
         e.update();
       e.render();
     });
@@ -203,8 +206,8 @@ Level.prototype.setMap = function(map) {
   for(var i in map) {
     if(map[i] > 0) {
       var element = Object.create(this.Linker[map[i]]);
-      element.x = Math.floor(i / this.width);
-      element.y = i % this.width;
+      element.x = i % this.width;
+      element.y = Math.floor(i / this.width);
       element.id += "#" + element.x + ":" + element.y;
       this.Elements.push(element);
     }
@@ -220,47 +223,55 @@ var Camera = function() {
   this.height = 0;
 };
 
-var Component = function() {
+var Component = function(type) {
   this.x = 0;
   this.y = 0;
   this.width = 0;
   this.height = 0;
   this.weight = 1;
   this.id = "Component";
-  this.isStatic = false;
-  this.useGravity = true;
+  this.isStatic = true;
+  this.isSolid = true;
+  this.useGravity = false;
   this.gravity = 0.98;
-  this.gravityDirection = 0;
+  this.gravityDirection = 180;
 
+  this.type = type;
   this.speed = [0, 0];
   this.direction = [0, 0];
   this.angle = 0;
   this.tick = 0;
   this.tick2 = 0;
+  this.smooth = [];
 
   this._ = { // private
     indexAngle: 0,
-    maxInLength: 0,
+    maxLength: 0,
     collision: [],
+    isDebug: false,
+  };
+
+  this.listener = {
+    collision: null
   };
 };
 Component.Collision = function() {
   this.isCollision = false;
   this.me = null;
   this.element = null;
-  this.meAngle = 0;
-  this.elementAngle = 0;
-  this.angle = 0;
+  this.deep = 0;
   this.direction = Direction.STOP;
 };
 
 Component.prototype.setWidth = function(width) {
   this.width = width;
+  this.height = width;
   this.angleUpdate();
   return this;
 };
 Component.prototype.setHeight = function(height) {
   this.height = height;
+  this.width = height;
   this.angleUpdate();
   return this;
 };
@@ -276,83 +287,68 @@ Component.prototype.setRotate = function(angle) {
 Component.prototype.getId = function() {
   return this.id.split("#")[0];
 };
+Component.prototype.getX = function() {
+  return this.x + this.width / 2;
+};
+Component.prototype.getY = function() {
+  return this.y + this.height / 2;
+};
+
 Component.prototype.setTexture = function(texture) {
   this.texture = texture;
 };
 
 Component.prototype.angleUpdate = function() {
-  this._.maxInLength = Math.hypot((this.width / 2), (this.height / 2));
-  this._.indexAngle = Math.acos(this.width / (2 * this._.maxInLength)) * (180 / Math.PI) * 2;
-  return this;
+  this._.maxLength = Math.hypot((this.width / 2), (this.height / 2));
+  this._.indexAngle = Math.acos((this.width / 2) / this._.maxLength) * 180 / Math.PI;
 };
 Component.prototype.collisionUpdate = function(element) {
-  if(Math.hypot(Math.abs(this.x - element.x), Math.abs(this.y - element.y)) <= 1.5 * (this._.maxInLength + element._.maxInLength)) {
+  if(Math.hypot(Math.abs(this.x - element.x), Math.abs(this.y - element.y)) <= 1.5 * (this._.maxLength + element._.maxLength)) {
     var axis = [];
+    var realAngle = [];
     var leng = [];
     var lengA = []; // this
     var lengB = []; // element
 
-    axis[0] = Math.abs((this.angle) % 90);
-    axis[1] = Math.abs((this.angle + 90) % 90);
-    axis[2] = Math.abs((element.angle) % 90);
-    axis[3] = Math.abs((element.angle + 90) % 90);
+    axis[0] = (this.angle);
+    axis[1] = (this.angle + 90);
+    axis[2] = (element.angle);
+    axis[3] = (element.angle + 90);
+
+    realAngle[0] = 90 - Math.abs(element._.indexAngle - (90 - axis[0] % 90) - element.angle) % 90;
+    realAngle[1] = 90 - Math.abs(element._.indexAngle - (90 - axis[1] % 90) - element.angle) % 90;
+    realAngle[2] = 90 - Math.abs(this._.indexAngle - (90 - axis[2] % 90) - this.angle) % 90;
+    realAngle[3] = 90 - Math.abs(this._.indexAngle - (90 - axis[3] % 90) - this.angle) % 90;
 
     lengA[0] = Math.abs(this.width / 2);
-    lengB[0] = Math.abs(element._.maxInLength * Math.cos((((element._.indexAngle / 2) - axis[0] - element.angle) % 90) * (Math.PI / 180)));
+    lengB[0] = Math.abs(element._.maxLength * Math.cos(realAngle[0] / 180 * Math.PI));
 
     lengA[1] = Math.abs(this.height / 2);
-    lengB[1] = Math.abs(element._.maxInLength * Math.cos((((element._.indexAngle / 2) - axis[1] - element.angle) % 90) * (Math.PI / 180)));
+    lengB[1] = Math.abs(element._.maxLength * Math.cos(realAngle[1] / 180 * Math.PI));
 
-    lengA[2] = Math.abs(this._.maxInLength * Math.cos((((this._.indexAngle / 2) - axis[2] - this.angle) % 90) * (Math.PI / 180)));
+    lengA[2] = Math.abs(this._.maxLength * Math.sin(realAngle[2] / 180 * Math.PI));
     lengB[2] = Math.abs(element.width / 2);
 
-    lengA[3] = Math.abs(this._.maxInLength * Math.cos((((this._.indexAngle / 2) - axis[3] - this.angle) % 90) * (Math.PI / 180)));
+    lengA[3] = Math.abs(this._.maxLength * Math.sin(realAngle[3] / 180 * Math.PI));
     lengB[3] = Math.abs(element.height / 2);
 
-    var L = Math.hypot(Math.abs(this.x - element.x), Math.abs(this.y - element.y));
-    leng[0] = Math.abs(L * Math.cos(axis[1] * (Math.PI / 180)));
-    leng[1] = Math.abs(L * Math.cos(axis[0] * (Math.PI / 180)));
-    leng[2] = Math.abs(L * Math.cos(axis[3] * (Math.PI / 180)));
-    leng[3] = Math.abs(L * Math.cos(axis[2] * (Math.PI / 180)));
-    if(lengA[0] > leng[0] - lengB[0] &&
-       lengA[1] > leng[1] - lengB[1] &&
-       lengA[2] > leng[2] - lengB[2] &&
-       lengA[3] > leng[3] - lengB[3]) {
+    var xleng = Math.abs((this.x + this.width / 2) - (element.x + element.width / 2));
+    var yleng = Math.abs((this.y + this.height / 2) - (element.y + element.height / 2));
+    leng[0] = Math.abs(Math.cos(axis[0] / 180 * Math.PI) * (xleng - (yleng * Math.tan(axis[0] / 180 * Math.PI))));
+    leng[1] = Math.abs(Math.cos(axis[1] / 180 * Math.PI) * (xleng - (yleng * Math.tan(axis[1] / 180 * Math.PI))));
+    leng[2] = Math.abs(Math.cos(axis[2] / 180 * Math.PI) * (xleng - (yleng * Math.tan(axis[2] / 180 * Math.PI))));
+    leng[3] = Math.abs(Math.cos(axis[3] / 180 * Math.PI) * (xleng - (yleng * Math.tan(axis[3] / 180 * Math.PI))));
+
+    if(leng[0] - lengA[0] < lengB[0] &&
+       leng[1] - lengA[1] < lengB[1] &&
+       leng[2] - lengA[2] < lengB[2] &&
+       leng[3] - lengA[3] < lengB[3]) {
       var data = new Component.Collision();
       data.isCollision = true;
       data.me = this;
       data.element = element;
-      data.meAngle = this.angle % 90;
-      data.elementAngle = element.angle % 90;
-      data.angle = element.angle % 90 - this.angle % 90;
-
-      var AD = [];
-      var _AD = [];
-      AD[0] = Math.abs(axis[0] - this.gravityDirection % 90);
-      AD[1] = Math.abs(axis[1] - this.gravityDirection % 90);
-      AD[2] = Math.abs(axis[2] - this.gravityDirection % 90);
-      AD[3] = Math.abs(axis[3] - this.gravityDirection % 90);
-      _AD = Object.create(AD);
-
-      _AD.sort(function(a, b) {
-        return a - b;
-      });
-
-      var axisNum = 0;
-      for(var i in _AD) {
-        if(AD[0] == _AD[i]) {
-          axisNum = i;
-          break;
-        }
-      }
-
-      var A1 = lengA[0] + (axisNum % 2 == 0 ? this.width : this.height) * Math.cos(axis[axisNum]) + (axisNum % 2 == 0 ? this.x : element.y);
-      var B1 = lengB[0] + (axisNum % 2 == 0 ? element.width : element.height) * Math.cos(axis[axisNum]) + (axisNum % 2 == 0 ? element.x : element.y);
-      if(A1 - B1 > 0) {
-        data.direction = Direction.LEFT;
-      } else {
-        data.direction = Direction.RIGHT;
-      }
+      data.angle = 180 - (Math.atan2(this.getX() - element.getX(), this.getY() - element.getY()) * 180 / Math.PI);
+      this.listener.collision(element, data.angle);
       this._.collision[element.id] = data;
     } else {
       try {
@@ -362,10 +358,14 @@ Component.prototype.collisionUpdate = function(element) {
   }
 };
 Component.prototype.moveUpdate = function(collision) {
-  this.x += Math.sin(this.direction[0] * (Math.PI / 180)) * this.speed[0] * (Grov.Frame / 500) * 0.01;
-  this.y += Math.cos(this.direction[0] * (Math.PI / 180)) * this.speed[0] * (Grov.Frame / 500) * 0.01;
-  this.x += Math.sin(this.direction[1] * (Math.PI / 180)) * this.speed[1] * (Grov.Frame / 500) * 0.01;
-  this.y += Math.cos(this.direction[1] * (Math.PI / 180)) * this.speed[1] * (Grov.Frame / 500) * 0.01;
+  if(this.speed[0] !== 0) {
+    this.x += Math.sin(this.direction[0] * (Math.PI / 180)) * this.speed[0] * (Grov.Frame / 500) * 0.01;
+    this.y += Math.cos(this.direction[0] * (Math.PI / 180)) * this.speed[0] * (Grov.Frame / 500) * 0.01;
+  }
+  if(this.speed[1] !== 0) {
+    this.x += Math.sin(this.direction[1] * (Math.PI / 180)) * this.speed[1] * (Grov.Frame / 500) * 0.01;
+    this.y += Math.cos(this.direction[1] * (Math.PI / 180)) * this.speed[1] * (Grov.Frame / 500) * 0.01;
+  }
 
   if(collision !== null) {/*
     if(collision.direction === Direction.LEFT) {
@@ -383,8 +383,8 @@ Component.prototype.moveUpdate = function(collision) {
   }
   if(collision === null || !collision.isCollision) {
     if(this.useGravity) {
-      this.x += Math.sin(this.gravityDirection * (Math.PI / 180)) * this.gravity * this.tick * this.tick * (Grov.Frame / 500) * 0.00005;
-      this.y += Math.cos(this.gravityDirection * (Math.PI / 180)) * this.gravity * this.tick * this.tick * (Grov.Frame / 500) * 0.00005;
+      this.x -= Math.sin(this.gravityDirection * (Math.PI / 180)) * this.gravity * this.tick * this.tick * (Grov.Frame / 500) * 0.00005;
+      this.y -= Math.cos(this.gravityDirection * (Math.PI / 180)) * this.gravity * this.tick * this.tick * (Grov.Frame / 500) * 0.00005;
     }
   }
 };
@@ -396,43 +396,111 @@ Component.prototype.update = function() {
     }
   });
 
+  var side = false;
   var isCollision = null;
   for(var i in this._.collision) {
     if(this._.collision[i] !== null) {
       if(this._.collision[i].isCollision) {
-        this.y -= 0.01;
-        isCollision = this._.collision[i];
+        isCollision = this._.collision[i].isCollision;
+        if(this._.collision[i].element.isSolid) {
+          if(this._.collision[i].element.type === "Rect") {
+            if(this._.collision[i].angle < 45 || this._.collision[i].angle >= 315) {
+              this.x -= Math.sin(0 * (Math.PI / 180)) * 0.05;
+              this.y -= Math.cos(0 * (Math.PI / 180)) * 0.05;
+            } else if(this._.collision[i].angle >= 45 && this._.collision[i].angle < 135) {
+              this.x -= Math.sin(270 * (Math.PI / 180)) * 0.05;
+              this.y -= Math.cos(270 * (Math.PI / 180)) * 0.05;
+            } else if(this._.collision[i].angle >= 135 && this._.collision[i].angle < 225) {
+              this.x -= Math.sin(180 * (Math.PI / 180)) * 0.05;
+              this.y -= Math.cos(180 * (Math.PI / 180)) * 0.05;
+            } else if(this._.collision[i].angle >= 225 && this._.collision[i].angle < 315) {
+              this.x -= Math.sin(90 * (Math.PI / 180)) * 0.05;
+              this.y -= Math.cos(90 * (Math.PI / 180)) * 0.05;
+            }
+          } else {
+            var a = 180 - this._.collision[i].angle;
+            if(this.useGravity) {
+              this.y += Math.cos(a * (Math.PI / 180)) * 0.01;
+            } else {
+              this.y += Math.cos(a * (Math.PI / 180)) * 0.1;
+            }
+            this.x += Math.sin(a * (Math.PI / 180)) * 0.1;
+          }
+          if(Math.abs((this._.collision[i].angle > 180 ? 360 - this._.collision[i].angle : this._.collision[i].angle) - (this.gravityDirection - 180) % 360) < 45)
+            side = true;
+          if(this.useGravity) {
+            this.x -= Math.sin(this.gravityDirection * (Math.PI / 180)) * this.gravity * 0.2;
+            this.y -= Math.cos(this.gravityDirection * (Math.PI / 180)) * this.gravity * 0.2;
+          }
+        }
       }
     }
   }
-  this.moveUpdate(isCollision);
   if(!isCollision) {
+    this.tick++;
+  } else if(isCollision && !side) {
     this.tick++;
   } else {
     this.tick = 0;
   }
+  this.moveUpdate(isCollision);
+
+  if(!this.smooth[0]) {
+    this.direction[0] = 0;
+    this.speed[0] = 0;
+  } else if(this.tick % (Grov.Frame) === Grov.Frame / 2) {
+    this.direction[0] = 0;
+    this.speed[0] = 0;
+    this.smooth[0] = false;
+  }
+  if(!this.smooth[1]) {
+    this.direction[1] = 0;
+    this.speed[1] = 0;
+  } else if(this.tick % (Grov.Frame) === Grov.Frame / 2) {
+    this.direction[1] = 0;
+    this.speed[1] = 0;
+    this.smooth[1] = false;
+  }
 };
-Component.prototype.setVel = function(direction, speed) {
+Component.prototype.setVel = function(direction, speed, type) {
   direction = direction % 360;
   if((direction < 45 && direction > -45) || (direction < 225 && direction > 155)) {
     this.direction[0] = direction;
     this.speed[0] = speed;
+    if(type === "smooth") {
+      this.smooth[0] = true;
+    }
   } else {
     this.direction[1] = direction;
     this.speed[1] = speed;
+    if(type === "smooth") {
+      this.smooth[1] = true;
+    }
   }
   return this;
 };
 Component.prototype.render = function() {
-  Grov.Context.fillStyle = "#BDBDBD";
-  if(this.getId() == "player")
-    Grov.Context.fillStyle = "#BDBDBD";
   Grov.Context.save();
   Grov.Context.translate(this.x * Grov.Scale + (this.width * Grov.Scale / 2), this.y * Grov.Scale + (this.height * Grov.Scale / 2));
   Grov.Context.rotate(this.angle * Math.PI / 180);
   Grov.Context.translate(-(this.x * Grov.Scale + (this.width * Grov.Scale / 2)), -(this.y * Grov.Scale + (this.height * Grov.Scale / 2)));
-  Grov.Context.fillRect(this.x * Grov.Scale, this.y * Grov.Scale, this.width * Grov.Scale, this.height * Grov.Scale);
+  Grov.Context.drawImage(this.texture, this.x * Grov.Scale, this.y * Grov.Scale, this.width * Grov.Scale, this.height * Grov.Scale);
+
+  if(this._.isDebug) {
+    Grov.Context.strokeStyle = "#FF0000";
+    Grov.Context.lineWidth = 2;
+    Grov.Context.strokeRect(this.x * Grov.Scale, this.y * Grov.Scale, this.width * Grov.Scale, this.height * Grov.Scale);
+  }
+
   Grov.Context.restore();
+};
+Component.prototype.delete = function() {
+  for(var i in Grov.Level[Grov.Stage].Elements) {
+    if(Grov.Level[Grov.Stage].Elements[i].id === this.id) {
+      Grov.Level[Grov.Stage].Elements.splice(i, 1);
+      break;
+    }
+  }
 };
 
 var Particle = function() {
@@ -572,7 +640,6 @@ UI.Button.prototype.render = function() {
   else {
     this.renderNormal();
     Grov.Canvas.setAttribute("style", "cursor: cursor");
-    console.log("AAAA");
   }
 };
 
@@ -620,4 +687,9 @@ function ColorLuminance(hex, lum) {
 	}
 
 	return rgb;
+}
+
+function angleSet(angle) {
+  var result = (angle < 0) ? 90 + angle : angle;
+  return (result > 90) ? 180 - result : result;
 }
