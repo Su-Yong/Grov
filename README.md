@@ -18,18 +18,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Introduction
 This is simple web game engine. It use a html5 canvas
-+ Very easy and extendable
-+ Everyone can make this library
-+ Low lags
++ Game source will be simple and easy
++ Everyone can use this library
++ You can make web game even you aren't programmer
 
 # Running
 1. Download this repository and insert your project in Grov.js
-2. Load Grov.js from main html file
-3. Use the engine!
-example is Grov-Example.js file
+2. Load Grov.js from main html file FIRST
+3. You must load map-data (json file) BEFORE GAME JS FILE
+4. Setting Grov
+5. call Grov.run();
 
 # Tips
-This is developing version. You shouldn't use this library now.
+Its component phyical engine is designed for rect
+Component's constructor parameter is component type (ex: circle, rect)
+If you use Grov-Example's createComponent function, better simple for source
 
 ---
 
