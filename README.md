@@ -27,6 +27,7 @@ This is simple web game engine. It use a html5 canvas
 ## Grov
 public global static variable
 
+#### METHOD
 ```js
 Grov.addLevel(Level level) - add game [Level]
 Grov.run() - call it once when you run Grov
@@ -35,28 +36,78 @@ Grov.setCanvas(Canvas canvas) - set game [Canvas]
 PRIVATE
   Grov.keyBinder.start() - it call with Grov.run()
 ```
+#### FIELD
+
+```js
+Grov.Frame - Frame
+Grov.Scale - Component scale
+Grov.Stage - Stage count
+
+PRIVATE
+  Grov.Level - Map array
+  Grov.Backup - Map array backup
+  Grov.Canvas - Game canvas
+  Grov.Context - Game canvas context
+  Grov.KeyBinder - key binder object
+  Grov.process - Process (IDK)
+
+```
+
 ### Grov.keyBinder
 Grov key binder
+
+#### METHOD
 ```js
 Grov.keyBinder.setKeyBind(String key, Function function) - call [function] when you press [key]
 ```
+#### FIELD
+```js
+PRIVATE
+  Grov.keyBinder.customKeys - (IDK)
+  Grov.keyBinder.key - key object array
+```
 
-##Level
+## Level
 Game level variable
 
+#### METHOD
 ```js
 Level.setWidth(Number width) - set [Level] [width]
 Level.setHeight(Number height) - set [Level] [height]
 Level.setMapLinker(Array{Component} Linker) - [Level]'s map number array changed [linker]'s actually value
 Level.setMap(Array{Number} map) - set [Level] map by array`s coordinate value
 ```
+#### FIELD
+```js
+PRIVATE
+  Level.width - level width array
+  Level.height - level height array
+  Level.linker - level linker array
+  Level.Elements - level comonent array
+  Level.UIElements - level UI component array
+```
 
-##Camera
+## Camera
 it doesn't use now
 
-##Component
+#### METHOD
+```js
+
+```
+
+#### FIELD
+```js
+PRIVATE
+  Camera.x - camera X coordinate
+  Camera.y - camera Y coordinate
+  Camera.width - camera width
+  Camera.height - camera height
+```
+
+## Component
 Game component variable
 
+#### METHOD
 ```js
 Component.constructor(String type) - set component [type] (Rect / Circle)
 
@@ -77,8 +128,74 @@ PRIVATE
   Component.update() - update all
   Component.render() - render [component]
 ```
+#### FIELD
+```js
+Component.isStatic - move check
+Component.isSolid - collision check
+Component.useGravity - gravity use
+Component.gravity - gravity value
+Component.gravityDirection - gravity angle
+
+PRIVATE
+  Component.type - component type
+  Component.x - component X coordinate
+  Component.y - component Y coordinate
+  Component.width - component width
+  Component.height - component width
+  Component.weight - component mess
+  Component.id - component id
+  Component.speed - component speed array
+  Component.direction - component direction array
+  Component.angle - component angle
+  Component.tick - component tick
+  Component.tick2 - component tick
+  Component.smooth - component smooth check
+```
+### Component._
+private field
+
+#### METHOD
+```js
+
+```
+#### FIELD
+```js
+Component._.indexAngle - middle angle
+Component._.maxLength - center to point length
+Component._.collision - collision object array
+Component._.isDebug - debuging check
+```
+
+### Component.listener
+listener field
+
+#### METHOD
+```js
+
+```
+
+#### FIELD
+```js
+Component.listener.collision - listener collision array
+Component.listener.tick - tick
+```
+
 ### Component.Collision
 collision variable
+
+#### METHOD
+```js
+
+```
+
+#### FIELD
+```js
+Component.Collision.isCollision = false;
+Component.Collision.me = null;
+Component.Collision.element = null;
+Component.Collision.deep = 0;
+Component.Collision.direction = Direction.STOP;
+```
 
 ## Particle
 it doesn't use now
