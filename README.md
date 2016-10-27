@@ -28,15 +28,17 @@ This is simple web game engine. It use a html5 canvas
 public global static variable
 
 ```js
-Grov.keyBinder - Grov key binder
-  Grov.keyBinder.setKeyBind(String key, Function function) - call [function] when you press [key]
-
 Grov.addLevel(Level level) - add game [Level]
 Grov.run() - call it once when you run Grov
 Grov.setCanvas(Canvas canvas) - set game [Canvas]
 
 PRIVATE
   Grov.keyBinder.start() - it call with Grov.run()
+```
+### Grov.keyBinder
+Grov key binder
+```js
+Grov.keyBinder.setKeyBind(String key, Function function) - call [function] when you press [key]
 ```
 
 ##Level
@@ -56,47 +58,49 @@ it doesn't use now
 Game component variable
 
 ```js
-Component.constructor(String type) - set component`s [type] (Rect / Circle)
+Component.constructor(String type) - set component [type] (Rect / Circle)
 
 Component.setWidth(Number width) - set [Component] [width]
 Component.setHeight(Number height) - set [Component] [height]
 Component.setRotate(Number angle) - set [Component] [angle]
-Component.getId() - get [Component]`s id
-Component.getX() - get [Component]`s X coordinate
-Component.getY() - get [Component]`s Y coordinate
+Component.getId() - get [Component] id
+Component.getX() - get [Component] X coordinate
+Component.getY() - get [Component] Y coordinate
 Component.setTexture(Image texture) - set [Component] [texture]
 Component.setVel(Number angle, Number speed, String type) - move [component] speed [speed] with [angle] direction
 Component.delete() - delete [Component]
 
 PRIVATE
-  Component.Collision - collision variable
   Component.angleUpdate() - update angle
   Component.collisionUpdate() - update collision
   Component.moveUpdate() - update coordinate
   Component.update() - update all
   Component.render() - render [component]
 ```
+### Component.Collision
+collision variable
 
-##Particle
+## Particle
 it doesn't use now
 
-##UI
+## UI
 game UI component
 
+### UI.Button
+game button
 ```js
-UI.Button - game button
-  UI.Button.setWidth(Number width) - set [Button] [width]
-  UI.Button.setHeight(Number height) - set [Button] [height]
-  UI.Button.setX(Number x) - set [Button] [X] coordinate
-  UI.Button.setY(Number y) - set [Button] [Y] coordinate
-  UI.Button.setText(String text) - set [Button] [text]
-  UI.Button.setClickListener(Function listener) - call [listener] when click [Button]
-  UI.Button.setLongClickListener(Function listener) - call [listener] when long click [Button]
+UI.Button.setWidth(Number width) - set [Button] [width]
+UI.Button.setHeight(Number height) - set [Button] [height]
+UI.Button.setX(Number x) - set [Button] [X] coordinate
+UI.Button.setY(Number y) - set [Button] [Y] coordinate
+UI.Button.setText(String text) - set [Button] [text]
+UI.Button.setClickListener(Function listener) - call [listener] when click [Button]
+UI.Button.setLongClickListener(Function listener) - call [listener] when long click [Button]
   
-  PRIVATE
-    UI.Button.renderNormal() - render [Button] when non-click
-    UI.Button.renderOver() - render [Button] when over [Button]
-    UI.Button.renderOver() - render [Button] when over [Button]
+PRIVATE
+  UI.Button.renderNormal() - render [Button] when non-click
+  UI.Button.renderOver() - render [Button] when over [Button]
+  UI.Button.renderOver() - render [Button] when over [Button]
 ```
 ---
 
