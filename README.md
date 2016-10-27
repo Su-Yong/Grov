@@ -22,18 +22,82 @@ This is simple web game engine. It use a html5 canvas
 + Everyone can use this library
 + You can make web game even you aren't programmer
 
-# Running
-1. Download this repository and insert your project in Grov.js
-2. Load Grov.js from main html file FIRST
-3. You must load map-data (json file) BEFORE GAME JS FILE
-4. Setting Grov
-5. call Grov.run();
+# API
 
-# Tips
-Its component phyical engine is designed for rect
-Component's constructor parameter is component type (ex: circle, rect)
-If you use Grov-Example's createComponent function, better simple for source
+## Grov
+public global static variable
 
+```js
+Grov.keyBinder - Grov key binder
+  Grov.keyBinder.setKeyBind(String key, Function function) - call [function] when you press [key]
+
+Grov.addLevel(Level level) - add game [Level]
+Grov.run() - call it once when you run Grov
+Grov.setCanvas(Canvas canvas) - set game [Canvas]
+
+PRIVATE
+  Grov.keyBinder.start() - it call with Grov.run()
+```
+
+##Level
+Game level variable
+
+```js
+Level.setWidth(Number width) - set [Level] [width]
+Level.setHeight(Number height) - set [Level] [height]
+Level.setMapLinker(Array{Component} Linker) - [Level]'s map number array changed [linker]'s actually value
+Level.setMap(Array{Number} map) - set [Level] map by array`s coordinate value
+```
+
+##Camera
+it doesn't use now
+
+##Component
+Game component variable
+
+```js
+Component.constructor(String type) - set component`s [type] (Rect / Circle)
+
+Component.setWidth(Number width) - set [Component] [width]
+Component.setHeight(Number height) - set [Component] [height]
+Component.setRotate(Number angle) - set [Component] [angle]
+Component.getId() - get [Component]`s id
+Component.getX() - get [Component]`s X coordinate
+Component.getY() - get [Component]`s Y coordinate
+Component.setTexture(Image texture) - set [Component] [texture]
+Component.setVel(Number angle, Number speed, String type) - move [component] speed [speed] with [angle] direction
+Component.delete() - delete [Component]
+
+PRIVATE
+  Component.Collision - collision variable
+  Component.angleUpdate() - update angle
+  Component.collisionUpdate() - update collision
+  Component.moveUpdate() - update coordinate
+  Component.update() - update all
+  Component.render() - render [component]
+```
+
+##Particle
+it doesn't use now
+
+##UI
+game UI component
+
+```js
+UI.Button - game button
+  UI.Button.setWidth(Number width) - set [Button] [width]
+  UI.Button.setHeight(Number height) - set [Button] [height]
+  UI.Button.setX(Number x) - set [Button] [X] coordinate
+  UI.Button.setY(Number y) - set [Button] [Y] coordinate
+  UI.Button.setText(String text) - set [Button] [text]
+  UI.Button.setClickListener(Function listener) - call [listener] when click [Button]
+  UI.Button.setLongClickListener(Function listener) - call [listener] when long click [Button]
+  
+  PRIVATE
+    UI.Button.renderNormal() - render [Button] when non-click
+    UI.Button.renderOver() - render [Button] when over [Button]
+    UI.Button.renderOver() - render [Button] when over [Button]
+```
 ---
 
-Copyright 2016. SY all rights reserved.
+Copyright 2016. SY PlanP all rights reserved.
