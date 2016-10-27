@@ -200,11 +200,25 @@ Component.Collision.direction = Direction.STOP;
 ## Particle
 it doesn't use now
 
+#### METHOD
+```js
+
+```
+#### FIELD
+```js
+  Particle.x - Particle X coordinate
+  Particle.y - Particle Y coordinate
+  Particle.width - Particle width
+  Particle.height - Particle width
+```
+
 ## UI
 game UI component
 
 ### UI.Button
 game button
+
+#### METHOD
 ```js
 UI.Button.setWidth(Number width) - set [Button] [width]
 UI.Button.setHeight(Number height) - set [Button] [height]
@@ -218,6 +232,42 @@ PRIVATE
   UI.Button.renderNormal() - render [Button] when non-click
   UI.Button.renderOver() - render [Button] when over [Button]
   UI.Button.renderOver() - render [Button] when over [Button]
+```
+#### FIELD
+```js
+PRIVATE
+  UI.Button.x - buttone X coordinate
+  UI.Button.y - buttone Y coordinate
+  UI.Button.width - buttone width
+  UI.Button.height - buttone height
+  UI.Button.background - buttone texture
+  UI.Button.text - buttone text
+  UI.Button.type - buttone type
+```
+
+#### UI.Button.listener
+##### METHOD
+```js
+
+```
+##### FIELD
+```
+PRIVATE
+  UI.Button.listener.over - over listener
+  UI.Button.listener.click - click listener
+  UI.Button.listener.longClick - long click listener
+```
+#### UI.Button._
+##### METHOD
+```js
+
+```
+##### FIELD
+```js
+PRIVATE
+  UI.Button._.isOver - over check
+  UI.Button._.isPressed - press check
+  UI.Button._.pressValue - press count
 ```
 ---
 
