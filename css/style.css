@@ -32,6 +32,11 @@ html, body {
     padding: 0px;
 }
 
+canvas {
+  background-color: #EEEEEE;
+  box-shadow: 0px 8px 12px #7D7D7D;
+}
+
 #title {
    font-size: 48px;
    text-align: center;

@@ -55,12 +55,14 @@ var Direction = {
 
 var Grov = {
   Level: [],
+  Backup: [],
   Canvas: null,
   Context: null,
   KeyBinder: null,
   Frame: 500,
   Scale: 16,
   Stage: 0,
+  process: null,
 };
 
 Grov.setCanvas = function(canvas) {
@@ -70,17 +72,19 @@ Grov.setCanvas = function(canvas) {
     var x = event.clientX - Grov.Canvas.offsetLeft;
     var y = event.clientY - Grov.Canvas.offsetTop;
     Grov.Level[Grov.Stage].UIElements.forEach(function(e, i) {
-      if(e.x < x && x < e.x + e.width) {
-        if(e.y < y && y < e.y + e.height) {
-          try {
-            e.listener.over();
-          } catch(err) {}
-          e._.isOver = true;
+      if(e.type === "button") {
+        if(e.x < x && x < e.x + e.width) {
+          if(e.y < y && y < e.y + e.height) {
+            try {
+              e.listener.over();
+            } catch(err) {}
+            e._.isOver = true;
+          } else {
+            e._.isOver = false;
+          }
         } else {
           e._.isOver = false;
         }
-      } else {
-        e._.isOver = false;
       }
     });
   };
@@ -89,9 +93,11 @@ Grov.setCanvas = function(canvas) {
     var x = event.clientX - Grov.Canvas.offsetLeft;
     var y = event.clientY - Grov.Canvas.offsetTop;
     Grov.Level[Grov.Stage].UIElements.forEach(function(e, i) {
-      if(e.x < x && x < e.x + e.width) {
-        if(e.y < y && y < e.y + e.height) {
-          e._.isOver = false;
+      if(e.type === "button") {
+        if(e.x < x && x < e.x + e.width) {
+          if(e.y < y && y < e.y + e.height) {
+            e._.isOver = false;
+          }
         }
       }
     });
@@ -100,17 +106,19 @@ Grov.setCanvas = function(canvas) {
     var x = event.clientX - Grov.Canvas.offsetLeft;
     var y = event.clientY - Grov.Canvas.offsetTop;
     Grov.Level[Grov.Stage].UIElements.forEach(function(e, i) {
-      if(e.x < x && x < e.x + e.width) {
-        if(e.y < y && y < e.y + e.height) {
-          e._.isPressed++;
-          e._.isPressed = true;
+      if(e.type === "button") {
+        if(e.x < x && x < e.x + e.width) {
+          if(e.y < y && y < e.y + e.height) {
+            e._.isPressed++;
+            e._.isPressed = true;
+          } else {
+            e._.pressValue = 0;
+            e._.isPressed = false;
+          }
         } else {
           e._.pressValue = 0;
           e._.isPressed = false;
         }
-      } else {
-        e._.pressValue = 0;
-        e._.isPressed = false;
       }
     });
   };
@@ -118,14 +126,16 @@ Grov.setCanvas = function(canvas) {
     var x = event.clientX - Grov.Canvas.offsetLeft;
     var y = event.clientY - Grov.Canvas.offsetTop;
     Grov.Level[Grov.Stage].UIElements.forEach(function(e, i) {
-      e._.isPressed = false;
-      if(e.x < x && x < e.x + e.width) {
-        if(e.y < y && y < e.y + e.height) {
-          if(e._.pressValue < Grov.Frame * 0.08 && e._.pressValue > 0) {
-            e.listener.click();
-          }
-          if(e._.pressValue > Grov.Frame * 0.12) {
-            e.listener.longClick();
+      if(e.type === "button") {
+        e._.isPressed = false;
+        if(e.x < x && x < e.x + e.width) {
+          if(e.y < y && y < e.y + e.height) {
+            if(e._.pressValue < Grov.Frame * 0.08 && e._.pressValue > 0) {
+              e.listener.click();
+            }
+            if(e._.pressValue > Grov.Frame * 0.12) {
+              e.listener.longClick();
+            }
           }
         }
       }
@@ -135,12 +145,24 @@ Grov.setCanvas = function(canvas) {
 };
 
 Grov.addLevel = function(level) {
-  Grov.Level.push(level);
+  Grov.Level.push(Object.create(level));
+  Grov.Backup = Object.clone(Grov.Level);
 };
 Grov.keyBinder = {
   customKeys: [],
   key: {},
 };
+//-----------------------
+Object.prototype.clone = function() {
+  var newObj = (this instanceof Array) ? [] : {};
+  for (var i in this) {
+    if (i == 'clone') continue;
+    if (this[i] && typeof this[i] == "object") {
+      newObj[i] = this[i].clone();
+    } else newObj[i] = this[i]
+  } return newObj;
+};
+//------------------------------------
 Grov.keyBinder.setKeyBind = function(keys, func) {
   Grov.keyBinder.customKeys.push({key: keys, func: func});
   return this;
@@ -158,7 +180,7 @@ Grov.keyBinder.start = function() {
 
 Grov.run = function() {
   Grov.keyBinder.start();
-  setInterval(function() {
+  Grov.process = setInterval(function() {
     for(var i in Grov.keyBinder.customKeys) {
       if(Grov.keyBinder.key[Grov.keyBinder.customKeys[i].key]) {
         Grov.keyBinder.customKeys[i].func();
@@ -172,14 +194,23 @@ Grov.run = function() {
       e.render();
     });
     Grov.Level[Grov.Stage].UIElements.forEach(function(e, i) {
-      if(e._.isPressed) {
-        e._.pressValue++;
-      } else {
-        e._.pressValue = 0;
-      }
       e.render();
+      if(e.type === "button") {
+        if(e._.isPressed) {
+          e._.pressValue++;
+        } else {
+          e._.pressValue = 0;
+        }
+      }
     });
   }, 1000 / Grov.Frame);
+};
+
+Grov.reloadLevel = function() {
+  clearInterval(Grov.process);
+  Grov.Context.clearRect(0, 0, Grov.Canvas.width, Grov.Canvas.height);
+  Grov.Level[Grov.Stage] = Object.clone(Grov.Backup[Grov.Stage]);
+  Grov.run();
 };
 
 var Level = function() {
@@ -252,7 +283,8 @@ var Component = function(type) {
   };
 
   this.listener = {
-    collision: null
+    collision: null,
+    tick: null
   };
 };
 Component.Collision = function() {
@@ -398,7 +430,7 @@ Component.prototype.update = function() {
 
   var side = false;
   var isCollision = null;
-  for(var i in this._.collision) {
+  collisionChecker: for(var i in this._.collision) {
     if(this._.collision[i] !== null) {
       if(this._.collision[i].isCollision) {
         isCollision = this._.collision[i].isCollision;
@@ -432,6 +464,17 @@ Component.prototype.update = function() {
             this.x -= Math.sin(this.gravityDirection * (Math.PI / 180)) * this.gravity * 0.2;
             this.y -= Math.cos(this.gravityDirection * (Math.PI / 180)) * this.gravity * 0.2;
           }
+          var isExists = false;
+          for(var j in Grov.Level[Grov.Stage].Elements) {
+            if(Grov.Level[Grov.Stage].Elements[j].id === this._.collision[i].element.id) {
+              isExists = true;
+              break;
+            }
+          }
+          if(!isExists) {
+            this._.collision[i] = null;
+            continue;
+          }
         }
       }
     }
@@ -461,6 +504,9 @@ Component.prototype.update = function() {
     this.speed[1] = 0;
     this.smooth[1] = false;
   }
+  try {
+    this.listener.tick(this);
+  } catch(err) {}
 };
 Component.prototype.setVel = function(direction, speed, type) {
   direction = direction % 360;
@@ -494,6 +540,7 @@ Component.prototype.render = function() {
 
   Grov.Context.restore();
 };
+
 Component.prototype.delete = function() {
   for(var i in Grov.Level[Grov.Stage].Elements) {
     if(Grov.Level[Grov.Stage].Elements[i].id === this.id) {
@@ -518,6 +565,7 @@ UI.Button = function() {
   this.height = 0;
   this.background = null;
   this.text = "";
+  this.type = "button";
   this.listener = {
     over: null,
     click: null,
@@ -641,6 +689,77 @@ UI.Button.prototype.render = function() {
     this.renderNormal();
     Grov.Canvas.setAttribute("style", "cursor: cursor");
   }
+};
+
+UI.Text = function() {
+  this.x = 0;
+  this.y = 0;
+  this.width = 0;
+  this.height = 0;
+  this.background = null;
+  this.text = "";
+  this.type = "textviewer";
+};
+UI.Text.prototype.render = function() {
+  var size = Math.min((this.width - 20) / this.text.split("").length, this.height - 40);
+  var padding = Math.max(5, size / 7) / 2;
+
+  Grov.Context.save();
+  Grov.Context.lineWidth = Math.max(5, size / 7);
+  Grov.Context.textAlign = "center";
+  Grov.Context.font = size + "px Product Sans, Nanum Gothic";
+
+  Grov.Context.fillStyle = ColorLuminance(this.background, -0.2);
+  Grov.Context.fillText(this.text, this.width / 2 + this.x, this.height / 2 + size / 2 - 1 + this.y);
+
+  Grov.Context.fillStyle = this.background;
+  Grov.Context.fillText(this.text, this.width / 2 + this.x, this.height / 2 + size / 2 + this.y);
+
+  Grov.Context.restore();
+};
+/*
+
+
+  "map": [
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 3, 3, 0, 0,
+    0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0,
+    0, 0, 3, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 3, 0, 0,
+    0, 0, 3, 3, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 3, 3, 0, 0,
+    0, 0, 3, 3, 2, 2, 2, 8, 3, 0, 0, 2, 2, 0, 0, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0,
+    0, 0, 0, 3, 3, 3, 3, 3, 3, 0, 0, 3, 3, 0, 0, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0,
+    0, 0, 0, 3, 3, 3, 3, 3, 0, 0, 0, 3, 3, 0, 0, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0,
+    0, 0, 0, 0, 3, 3, 3, 3, 0, 0, 0, 3, 3, 0, 0, 3, 3, 3, 3, 3, 3, 3, 2, 0, 0,
+    0, 0, 0, 0, 0, 3, 3, 3, 2, 0, 0, 0, 3, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 0, 0,
+    0, 0, 0, 0, 0, 3, 3, 3, 3, 0, 0, 0, 3, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 2, 0,
+    0, 0, 0, 0, 3, 3, 3, 3, 3, 2, 0, 0, 3, 2, 0, 2, 3, 3, 3, 3, 3, 3, 3, 3, 2,
+  ],
+
+*/
+UI.Image = function() {
+  this.x = 0;
+  this.y = 0;
+  this.width = 0;
+  this.height = 0;
+  this.background = null;
+  this.text = "";
+  this.type = "imageviewer";
+};
+UI.Image.prototype.render = function() {
+  Grov.Context.drawImage(this.background, this.x, this.y, this.width, this.height);
 };
 
 // Thanks http://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-on-html-canvas
