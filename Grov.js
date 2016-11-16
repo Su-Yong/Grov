@@ -174,7 +174,9 @@ Grov.keyBinder.start = function() {
   };
   window.onkeyup = function(e) {
     e = e || window.event;
-    Grov.keyBinder.key[String.fromCharCode(e.keyCode || e.which).toLowerCase()] = false;
+    var key = (96 <= e.keyCode && e.keyCode <= 105) ? e.keyCode - 48 : e.keyCode;
+    Grov.keyBinder.key[String.fromCharCode(key).toLowerCase()] = false;
+    console.log(String.fromCharCode(key).toLowerCase());
   };
 };
 
@@ -184,6 +186,7 @@ Grov.run = function() {
     for(var i in Grov.keyBinder.customKeys) {
       if(Grov.keyBinder.key[Grov.keyBinder.customKeys[i].key]) {
         Grov.keyBinder.customKeys[i].func();
+        console.log(Grov.keyBinder.key[Grov.keyBinder.customKeys[i].key]);
       }
     }
     Grov.Context.clearRect(0, 0, Grov.Canvas.width, Grov.Canvas.height);
@@ -264,6 +267,7 @@ var Component = function(type) {
   this.isStatic = true;
   this.isSolid = true;
   this.useGravity = false;
+  this.gravityAcceleration = true;
   this.gravity = 0.98;
   this.gravityDirection = 180;
 
@@ -313,6 +317,11 @@ Component.prototype.setWeight = function(weight) {
 };
 Component.prototype.setRotate = function(angle) {
   this.angle = angle;
+  this.angleUpdate();
+  return this;
+};
+Component.prototype.rotate = function(angle) {
+  this.angle += angle;
   this.angleUpdate();
   return this;
 };
@@ -415,8 +424,12 @@ Component.prototype.moveUpdate = function(collision) {
   }
   if(collision === null || !collision.isCollision) {
     if(this.useGravity) {
-      this.x -= Math.sin(this.gravityDirection * (Math.PI / 180)) * this.gravity * this.tick * this.tick * (Grov.Frame / 500) * 0.00005;
-      this.y -= Math.cos(this.gravityDirection * (Math.PI / 180)) * this.gravity * this.tick * this.tick * (Grov.Frame / 500) * 0.00005;
+      var acceleration = this.tick * this.tick;
+      if(!this.gravityAcceleration) {
+        acceleration = 500;
+      }
+      this.x -= Math.sin(this.gravityDirection * (Math.PI / 180)) * this.gravity * acceleration * (Grov.Frame / 500) * 0.00005;
+      this.y -= Math.cos(this.gravityDirection * (Math.PI / 180)) * this.gravity * acceleration * (Grov.Frame / 500) * 0.00005;
     }
   }
 };
